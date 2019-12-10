@@ -5,9 +5,11 @@ import won.bot.framework.extensions.serviceatom.ServiceAtomEnabledBotContextWrap
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SkeletonBotContextWrapper extends ServiceAtomEnabledBotContextWrapper {
     private final String connectedSocketsMap;
+    private final String groupMemberMap = "groupmembermap";
 
     public SkeletonBotContextWrapper(BotContext botContext, String botName) {
         super(botContext, botName);
@@ -36,5 +38,17 @@ public class SkeletonBotContextWrapper extends ServiceAtomEnabledBotContextWrapp
 
     public void removeConnectedSocket(URI senderSocket, URI targetSocket) {
         getBotContext().removeFromListMap(connectedSocketsMap, senderSocket.toString(), targetSocket);
+    }
+
+    public void addGroupMemberUri(URI atomUri, URI connectionUri) {
+        getBotContext().addToListMap(groupMemberMap, atomUri.toString(), connectionUri);
+    }
+
+    public List<URI> getGroupMemberUris(URI atomUri) {
+        return getBotContext().loadListMap(groupMemberMap).get(atomUri.toString()).stream().map(u -> URI.create(u.toString())).collect(Collectors.toList());
+    }
+
+    public void removeGroupMemberUri(URI atomUri, URI connectionUri) {
+        getBotContext().removeFromListMap(groupMemberMap, atomUri.toString(), connectionUri);
     }
 }

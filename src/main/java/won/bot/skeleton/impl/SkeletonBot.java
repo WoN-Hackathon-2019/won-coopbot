@@ -40,6 +40,7 @@ import won.protocol.message.builder.CreateAtomBuilder;
 import won.protocol.message.builder.WonMessageBuilder;
 import won.protocol.util.AtomModelWrapper;
 import won.protocol.util.WonRdfUtils;
+import won.protocol.util.linkeddata.WonLinkedDataUtils;
 
 public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAtomExtension {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -49,6 +50,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
 
     private URI receiverAtomUri = null;
     private ReceiverAtomEventHandler receiverAtomEventHandler;
+    private GroupAtomEventHandler groupAtomEventHandler;
 
     // bean setter, used by spring
     public void setRegistrationMatcherRetryInterval(final int registrationMatcherRetryInterval) {
@@ -77,6 +79,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
         SkeletonBotContextWrapper botContextWrapper = (SkeletonBotContextWrapper) getBotContextWrapper();
 
         receiverAtomEventHandler = new ReceiverAtomEventHandler(botContextWrapper, ctx, bus);
+        groupAtomEventHandler = new GroupAtomEventHandler(ctx, bus);
 
         // register listeners for event.impl.command events used to tell the bot to send
         // messages
@@ -112,7 +115,12 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
             protected void doRun(Event event, EventListener executingListener) {
                 EventListenerContext ctx = getEventListenerContext();
                 ConnectFromOtherAtomEvent connectFromOtherAtomEvent = (ConnectFromOtherAtomEvent) event;
-                receiverAtomEventHandler.receivedConnectMsg(connectFromOtherAtomEvent);
+
+                if (isMessageForReceiverAtom(connectFromOtherAtomEvent.getAtomURI())) {
+                    receiverAtomEventHandler.receivedConnectMsg(connectFromOtherAtomEvent);
+                } else {
+                    groupAtomEventHandler.receivedConnectMsg(connectFromOtherAtomEvent);
+                }
             }
         });
         // listen for the MatcherExtensionAtomCreatedEvent
@@ -141,12 +149,20 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
                 EventListenerContext ctx = getEventListenerContext();
 
                 MessageFromOtherAtomEvent recEvent = (MessageFromOtherAtomEvent) event;
-                if (recEvent.getAtomURI().equals(receiverAtomUri)) {
+                if (isMessageForReceiverAtom(recEvent.getAtomURI())) {
                     receiverAtomEventHandler.receivedMessage(recEvent);
                 } else {
-                    // TODO: Find all other atoms connected and forward
+                    groupAtomEventHandler.receivedMessage(recEvent);
+                    // Get All Atoms of chat (buffer them local in the context)
+                    //
+                    //WonLinkedDataUtils.getConnectionURIForSocketAndTargetSocket()
                 }
             }
         });
+    }
+
+
+    private boolean isMessageForReceiverAtom(URI atomUri) {
+        return atomUri.equals(receiverAtomUri);
     }
 }

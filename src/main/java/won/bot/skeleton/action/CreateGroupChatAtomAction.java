@@ -68,6 +68,7 @@ public class CreateGroupChatAtomAction extends AbstractCreateAtomAction {
         final URI atomURI = wonNodeInformationService.generateAtomURI(wonNodeUri);
         final AtomModelWrapper amw = this.createAtomStructure(atomURI, e);
         Dataset dataset = amw.copyDataset();
+
         logger.debug("creating atom on won node {} with content {} ", wonNodeUri,
                 StringUtils.abbreviate(RdfUtils.toString(dataset), 150));
         WonMessage createAtomMessage = ctx.getWonMessageSender()
