@@ -2,6 +2,7 @@ package won.bot.skeleton.context;
 
 import won.bot.framework.bot.context.BotContext;
 import won.bot.framework.extensions.serviceatom.ServiceAtomEnabledBotContextWrapper;
+import won.bot.skeleton.model.GroupMember;
 
 import java.net.URI;
 import java.util.*;
@@ -40,15 +41,21 @@ public class SkeletonBotContextWrapper extends ServiceAtomEnabledBotContextWrapp
         getBotContext().removeFromListMap(connectedSocketsMap, senderSocket.toString(), targetSocket);
     }
 
-    public void addGroupMemberUri(URI atomUri, URI connectionUri) {
-        getBotContext().addToListMap(groupMemberMap, atomUri.toString(), connectionUri);
+
+
+    public void addGroupMember(URI atomUri, GroupMember member) {
+        getBotContext().addToListMap(groupMemberMap, atomUri.toString(), member);
     }
 
-    public List<URI> getGroupMemberUris(URI atomUri) {
-        return getBotContext().loadListMap(groupMemberMap).get(atomUri.toString()).stream().map(u -> URI.create(u.toString())).collect(Collectors.toList());
+    public List<GroupMember> getGroupMembers(URI atomUri) {
+        return getBotContext().loadListMap(groupMemberMap).get(atomUri.toString()).stream()
+                .map(m -> (GroupMember)m)
+                .collect(Collectors.toList());
     }
 
-    public void removeGroupMemberUri(URI atomUri, URI connectionUri) {
-        getBotContext().removeFromListMap(groupMemberMap, atomUri.toString(), connectionUri);
+    public void removeGroupMember(URI atomUri, URI connectionUri) {
+        getBotContext().loadListMap(groupMemberMap).get(atomUri.toString()).stream()
+                .filter(m -> ((GroupMember)m).getConnectionUri().equals(connectionUri))
+                .forEach(m -> getBotContext().removeFromListMap(groupMemberMap, atomUri.toString(), (GroupMember)m));
     }
 }

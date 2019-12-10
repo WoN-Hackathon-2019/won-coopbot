@@ -79,7 +79,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
         SkeletonBotContextWrapper botContextWrapper = (SkeletonBotContextWrapper) getBotContextWrapper();
 
         receiverAtomEventHandler = new ReceiverAtomEventHandler(botContextWrapper, ctx, bus);
-        groupAtomEventHandler = new GroupAtomEventHandler(ctx, bus);
+        groupAtomEventHandler = new GroupAtomEventHandler(botContextWrapper, ctx, bus);
 
         // register listeners for event.impl.command events used to tell the bot to send
         // messages
@@ -119,7 +119,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
                 if (isMessageForReceiverAtom(connectFromOtherAtomEvent.getAtomURI())) {
                     receiverAtomEventHandler.receivedConnectMsg(connectFromOtherAtomEvent);
                 } else {
-                    groupAtomEventHandler.receivedConnectMsg(connectFromOtherAtomEvent);
+                    groupAtomEventHandler.onConnect(connectFromOtherAtomEvent);
                 }
             }
         });
@@ -139,7 +139,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
         });
 
         // Create GropuChat Atom
-        bus.subscribe(CreateGroupChatEvent.class, new CreateGroupChatAtomAction(ctx));
+        bus.subscribe(CreateGroupChatEvent.class, new CreateGroupChatAtomAction(botContextWrapper, ctx));
 
 
         // Receiving Messages in connections
@@ -152,7 +152,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
                 if (isMessageForReceiverAtom(recEvent.getAtomURI())) {
                     receiverAtomEventHandler.receivedMessage(recEvent);
                 } else {
-                    groupAtomEventHandler.receivedMessage(recEvent);
+                    groupAtomEventHandler.onMessage(recEvent);
                     // Get All Atoms of chat (buffer them local in the context)
                     //
                     //WonLinkedDataUtils.getConnectionURIForSocketAndTargetSocket()

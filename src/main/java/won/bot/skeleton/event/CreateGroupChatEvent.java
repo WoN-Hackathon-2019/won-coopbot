@@ -1,6 +1,7 @@
 package won.bot.skeleton.event;
 
 import won.bot.framework.eventbot.event.BaseEvent;
+import won.bot.skeleton.model.GroupMember;
 
 import java.net.URI;
 
@@ -9,23 +10,15 @@ public class CreateGroupChatEvent extends BaseEvent {
     private String name;
     private int max;
     private String category;
-    private URI adminAtomUrl;
+    private GroupMember admin;
+    private URI adminSocketUri;
 
-    public CreateGroupChatEvent(String name) {
-        this.name = name;
-    }
-
-    public CreateGroupChatEvent(String category, URI adminAtomUrl) {
-        this.category = category;
-        this.name = category + " GropuChannel";
-        this.adminAtomUrl = adminAtomUrl;
-    }
-
-    public CreateGroupChatEvent(String category, URI adminAtomUrl, int max) {
+    public CreateGroupChatEvent(String category, GroupMember admin, URI adminSocketUri, int max) {
         this.max = max;
         this.category = category;
         this.name = category + " GropuChannel";
-        this.adminAtomUrl = adminAtomUrl;
+        this.admin = admin;
+        this.adminSocketUri = adminSocketUri;
     }
 
     public String getName() {
@@ -40,7 +33,11 @@ public class CreateGroupChatEvent extends BaseEvent {
         return category;
     }
 
-    public URI getAdminAtomUrl() {
-        return adminAtomUrl;
+    public GroupMember getAdmin() {
+        return admin;
+    }
+
+    public URI getAdminSocketUri() {
+        return adminSocketUri;
     }
 }
