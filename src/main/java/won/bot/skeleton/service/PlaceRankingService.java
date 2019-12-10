@@ -38,7 +38,7 @@ public class PlaceRankingService {
         }
 
         return distanceTuples.stream()
-                .sorted(Comparator.comparingDouble(LocationDistanceTuple::getCombinedDistance).reversed())
+                .sorted(Comparator.comparingDouble(LocationDistanceTuple::getCombinedDistance))
                 .map(LocationDistanceTuple::getSportPlace)
                 .limit(number)
                 .collect(Collectors.toList());
