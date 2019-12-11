@@ -54,5 +54,7 @@ public class SkeletonBotApp {
         engine.parse("/na hallo");
         engine.parse("/tra timi");
         engine.parse("/la struppi");
+        engine.parse("/la \"timi der tolle hund\"");
+        engine.parse("/la \"timi der \\\"tolle\\\" hund\"");
     }*/
 }
