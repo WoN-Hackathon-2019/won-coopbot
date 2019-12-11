@@ -5,6 +5,10 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import won.bot.framework.bot.utils.BotUtils;
+import won.bot.skeleton.cli.engine.CliEngine;
+import won.bot.skeleton.cli.engine.Command;
+import won.bot.skeleton.cli.engine.DefaultValue;
+import won.bot.skeleton.cli.engine.Optional;
 
 @SpringBootConfiguration
 @PropertySource("classpath:application.properties")
@@ -21,4 +25,34 @@ public class SkeletonBotApp {
         // Thread.sleep(5*60*1000);
         // app.exit(applicationContext);
     }
+
+
+    /*public SkeletonBotApp() {
+        CliEngine engine = new CliEngine();
+        engine.add(new Object() {
+            @Command("/ja")
+            void ja() {
+                System.out.println("ja");
+            }
+
+            @Command("/na")
+            void na(String arg1) {
+                System.out.println(arg1);
+            }
+
+            @Command("/tra")
+            void tra(String arg1, @Optional int age) {
+                System.out.println(arg1 + "/age:" + age);
+            }
+
+            @Command("/la")
+            void la(String arg1, @DefaultValue("6") int age) {
+                System.out.println(arg1 + "/age:" + age);
+            }
+        });
+        engine.parse("/ja");
+        engine.parse("/na hallo");
+        engine.parse("/tra timi");
+        engine.parse("/la struppi");
+    }*/
 }

@@ -1,5 +1,6 @@
 package won.bot.skeleton.cli.engine;
 
+import org.apache.commons.cli.MissingArgumentException;
 import org.apache.jena.atlas.lib.Pair;
 
 import java.lang.reflect.Array;
@@ -40,9 +41,24 @@ public class CliEngine {
 
         int commandIndex = 1;
         for (int i = 0; i < params.length; i++) {
-            if (parts.length - 1 < i) {
-                arguments[i] = null;
+            if (parts.length - 1 <= i) {
+                // parameter not set
+                if (params[i].isAnnotationPresent(Optional.class)) {
+                    if (params[i].getType().equals(String.class) || params[i].getType().isArray()) {
+                        arguments[i] = null;
+                    } else if (params[i].getType().equals(boolean.class)) {
+                        arguments[i] = false;
+                    } else {
+                        arguments[i] = 0;
+                    }
+                } else if (params[i].isAnnotationPresent(DefaultValue.class)) {
+                    String defaultValue = params[i].getAnnotation(DefaultValue.class).value();
+                    arguments[i] = parseType(params[i].getType(), defaultValue);
+                } else {
+                    throw new RuntimeException("Parameter " + params[i].getName() + " is missing");
+                }
             } else if (params[i].getType().isArray()) {
+                // Array argument
                 Class arrayType = params[i].getType().getComponentType();
                 if (arrayType.equals(int.class)) {
                     int[] arr = new int[parts.length - commandIndex];
@@ -101,6 +117,7 @@ public class CliEngine {
                 }
                 break;
             } else {
+                // Simpletype argument
                 arguments[i] = parseType(params[i].getType(), parts[commandIndex]);
             }
             commandIndex++;
