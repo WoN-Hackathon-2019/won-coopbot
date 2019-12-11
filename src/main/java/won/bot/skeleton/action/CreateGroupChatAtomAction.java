@@ -18,6 +18,7 @@ import won.bot.framework.eventbot.event.impl.wonmessage.FailureResponseEvent;
 import won.bot.framework.eventbot.listener.EventListener;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.event.CreateGroupChatEvent;
+import won.bot.skeleton.model.Group;
 import won.bot.skeleton.model.GroupMember;
 import won.protocol.message.WonMessage;
 import won.protocol.service.WonNodeInformationService;
@@ -72,6 +73,7 @@ public class CreateGroupChatAtomAction extends AbstractCreateAtomAction {
         EventBus bus = ctx.getEventBus();
         EventListener successCallback = event -> {
             logger.debug("atom creation successful, new atom URI is {}", atomURI);
+            botContextWrapper.addGroup(atomURI, new Group(e.getName(), e.getMax()));
             bus.publish(new AtomCreatedEvent(atomURI, wonNodeUri, dataset, null));
             ConnectCommandEvent connectToAdminEvent = new ConnectCommandEvent(
                     URI.create(amw.getDefaultSocket().get()),

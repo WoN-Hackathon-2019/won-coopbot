@@ -21,14 +21,18 @@ public class CliEngine {
         }
     }
 
-    public void parse(String cmd) {
+    public boolean isCommand(String str) {
+        return str.startsWith("/");
+    }
+
+    public Object parse(String cmd) {
         if (!cmd.startsWith("/")) {
-            return;
+            return null;
         }
         String[] parts = cmd.split(" ");
         String c = parts[0];
         if (!commands.containsKey(c)) {
-            return;
+            return null;
         }
         Pair<Method, Object> methodObjectPair = commands.get(c);
         Parameter[] params = methodObjectPair.getLeft().getParameters();
@@ -104,9 +108,10 @@ public class CliEngine {
 
         try {
             methodObjectPair.getLeft().setAccessible(true);
-            methodObjectPair.getLeft().invoke(methodObjectPair.getRight(), arguments);
+            return methodObjectPair.getLeft().invoke(methodObjectPair.getRight(), arguments);
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
 
     }

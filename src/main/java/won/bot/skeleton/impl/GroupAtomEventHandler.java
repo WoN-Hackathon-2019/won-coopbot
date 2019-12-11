@@ -2,6 +2,7 @@ package won.bot.skeleton.impl;
 
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.bus.EventBus;
+import won.bot.framework.eventbot.event.impl.command.close.CloseCommandEvent;
 import won.bot.framework.eventbot.event.impl.command.connect.ConnectCommandEvent;
 import won.bot.framework.eventbot.event.impl.command.connectionmessage.ConnectionMessageCommandEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.CloseFromOtherAtomEvent;
@@ -31,6 +32,12 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
 
     @Override
     public void onConnect(ConnectFromOtherAtomEvent event) {
+        if (botContextWrapper.getGroupMembers(event.getAtomURI()).size() >=
+                botContextWrapper.getGroup(event.getAtomURI()).getCapacity()) {
+            bus.publish(new CloseCommandEvent(event.getCon(), "The group is currently full."));
+            return;
+        }
+
         String name = WonRdfUtils.MessageUtils.getTextMessage(event.getWonMessage());
         botContextWrapper.addGroupMember(event.getAtomURI(), new GroupMember(name, event.getConnectionURI()));
         String message = "Hello " + name + ". You joined the groupchat.";
