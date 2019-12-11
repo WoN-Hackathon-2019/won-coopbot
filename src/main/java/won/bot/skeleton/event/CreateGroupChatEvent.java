@@ -10,14 +10,12 @@ public class CreateGroupChatEvent extends BaseEvent {
     private String name;
     private int max;
     private String category;
-    private GroupMember admin;
     private URI adminSocketUri;
 
-    public CreateGroupChatEvent(String category, GroupMember admin, URI adminSocketUri, int max) {
+    public CreateGroupChatEvent(String category, URI adminSocketUri, int max) {
         this.max = max;
         this.category = category;
         this.name = category + " GropuChannel";
-        this.admin = admin;
         this.adminSocketUri = adminSocketUri;
     }
 
@@ -31,10 +29,6 @@ public class CreateGroupChatEvent extends BaseEvent {
 
     public String getCategory() {
         return category;
-    }
-
-    public GroupMember getAdmin() {
-        return admin;
     }
 
     public URI getAdminSocketUri() {

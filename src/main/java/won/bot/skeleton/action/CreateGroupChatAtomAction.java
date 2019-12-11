@@ -33,11 +33,8 @@ public class CreateGroupChatAtomAction extends AbstractCreateAtomAction {
 
     private static Logger logger = LoggerFactory.getLogger(CreateGroupChatAtomAction.class);
 
-    private SkeletonBotContextWrapper botContextWrapper;
-
-    public CreateGroupChatAtomAction(SkeletonBotContextWrapper botContextWrapper, EventListenerContext eventListenerContext) {
+    public CreateGroupChatAtomAction(EventListenerContext eventListenerContext) {
         super(eventListenerContext);
-        this.botContextWrapper = botContextWrapper;
     }
 
     @Override
@@ -76,11 +73,10 @@ public class CreateGroupChatAtomAction extends AbstractCreateAtomAction {
         EventListener successCallback = event -> {
             logger.debug("atom creation successful, new atom URI is {}", atomURI);
             bus.publish(new AtomCreatedEvent(atomURI, wonNodeUri, dataset, null));
-            botContextWrapper.addGroupMember(atomURI, e.getAdmin());
             ConnectCommandEvent connectToAdminEvent = new ConnectCommandEvent(
                     URI.create(amw.getDefaultSocket().get()),
                     e.getAdminSocketUri(),
-                    "You joined the group"
+                    "Group Atom created. Whats your name?"
             );
             bus.publish(connectToAdminEvent);
         };
@@ -116,7 +112,7 @@ public class CreateGroupChatAtomAction extends AbstractCreateAtomAction {
         image.addProperty(RDF.type, SCHEMA.URL);
         //image.addProperty(SCHEMA.VALUE, chuckNorrisJoke.getIcon_url());
         // s:description
-        atom.addProperty(SCHEMA.DESCRIPTION, "Coop Group chat for place finding");
+        atom.addProperty(SCHEMA.DESCRIPTION, "Coop Group chat for place finding. Join the group with your nicname as opening message");
         // s:name
         atom.addProperty(SCHEMA.NAME, event.getName());
         if (event.getMax() > 1) {

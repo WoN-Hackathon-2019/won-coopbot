@@ -54,8 +54,9 @@ public class SkeletonBotContextWrapper extends ServiceAtomEnabledBotContextWrapp
     }
 
     public void removeGroupMember(URI atomUri, URI connectionUri) {
-        getBotContext().loadListMap(groupMemberMap).get(atomUri.toString()).stream()
+        GroupMember member = (GroupMember) getBotContext().loadListMap(groupMemberMap).get(atomUri.toString()).stream()
                 .filter(m -> ((GroupMember)m).getConnectionUri().equals(connectionUri))
-                .forEach(m -> getBotContext().removeFromListMap(groupMemberMap, atomUri.toString(), (GroupMember)m));
+                .findFirst().orElseGet(null);
+        getBotContext().removeFromListMap(groupMemberMap, atomUri.toString(), member);
     }
 }

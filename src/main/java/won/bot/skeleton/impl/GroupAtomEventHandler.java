@@ -31,28 +31,38 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
 
     @Override
     public void onConnect(ConnectFromOtherAtomEvent event) {
-        String openMsg = WonRdfUtils.MessageUtils.getTextMessage(event.getWonMessage());
-        botContextWrapper.addGroupMember(event.getAtomURI(), new GroupMember(openMsg, event.getConnectionURI()));
-        String message = "Hello " + openMsg + ". You joined the groupchat.";
+        String name = WonRdfUtils.MessageUtils.getTextMessage(event.getWonMessage());
+        botContextWrapper.addGroupMember(event.getAtomURI(), new GroupMember(name, event.getConnectionURI()));
+        String message = "Hello " + name + ". You joined the groupchat.";
         final ConnectCommandEvent connectCommandEvent = new ConnectCommandEvent(
                 event.getRecipientSocket(),
                 event.getSenderSocket(), message);
         bus.publish(connectCommandEvent);
 
-        sendAll(openMsg + " joined the chat", event.getAtomURI(), event.getConnectionURI());
+        sendAll(name + " joined the group", event.getAtomURI(), event.getConnectionURI());
     }
 
     @Override
     public void onMessage(MessageFromOtherAtomEvent event) {
         // Forward message to all participants
         String msg = WonRdfUtils.MessageUtils.getTextMessage(event.getWonMessage());
-        sendAll(msg, event.getAtomURI(), event.getConnectionURI());
+        GroupMember member = botContextWrapper.getGroupMembers(event.getAtomURI()).stream()
+                .filter(m -> event.getConnectionURI().equals(m.getConnectionUri()))
+                .findFirst().orElseGet(null);
+        if (member != null) {
+            sendAll(member.getName() + ": " + msg, event.getAtomURI(), event.getConnectionURI());
+        }
     }
 
     @Override
     public void onClose(CloseFromOtherAtomEvent event) {
-        botContextWrapper.removeGroupMember(event.getAtomURI(), event.getConnectionURI());
-        sendAll("Someone left the chat", event.getAtomURI(), event.getConnectionURI());
+        GroupMember member = botContextWrapper.getGroupMembers(event.getAtomURI()).stream()
+                .filter(m -> event.getConnectionURI().equals(m.getConnectionUri()))
+                .findFirst().orElseGet(null);
+        if (member != null) {
+            botContextWrapper.removeGroupMember(event.getAtomURI(), event.getConnectionURI());
+            sendAll(member.getName() + " left the group", event.getAtomURI(), event.getConnectionURI());
+        }
     }
 
 

@@ -10,6 +10,7 @@ import won.bot.framework.eventbot.event.impl.command.connect.ConnectCommandEvent
 import won.bot.framework.eventbot.event.impl.command.connect.ConnectCommandResultEvent;
 import won.bot.framework.eventbot.event.impl.command.connect.ConnectCommandSuccessEvent;
 import won.bot.framework.eventbot.event.impl.command.connectionmessage.ConnectionMessageCommandEvent;
+import won.bot.framework.eventbot.event.impl.wonmessage.CloseFromOtherAtomEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.ConnectFromOtherAtomEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
 import won.bot.framework.eventbot.filter.impl.CommandResultFilter;
@@ -20,7 +21,7 @@ import won.bot.skeleton.event.CreateGroupChatEvent;
 import won.bot.skeleton.model.GroupMember;
 import won.protocol.util.WonRdfUtils;
 
-public class ReceiverAtomEventHandler {
+public class ReceiverAtomEventHandler implements AtomMessageEventHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ReceiverAtomEventHandler.class);
 
@@ -34,7 +35,8 @@ public class ReceiverAtomEventHandler {
         this.bus = bus;
     }
 
-    public void receivedConnectMsg(ConnectFromOtherAtomEvent event) {
+    @Override
+    public void onConnect(ConnectFromOtherAtomEvent event) {
         String message = "Hello i am the BotSkeletor i will send you a message everytime an atom is created...";
         final ConnectCommandEvent connectCommandEvent = new ConnectCommandEvent(
                 event.getRecipientSocket(),
@@ -64,11 +66,12 @@ public class ReceiverAtomEventHandler {
         ctx.getEventBus().publish(connectCommandEvent);
     }
 
-    public void receivedMessage(MessageFromOtherAtomEvent event) {
+    @Override
+    public void onMessage(MessageFromOtherAtomEvent event) {
         String recMsg = WonRdfUtils.MessageUtils.getTextMessage(event.getWonMessage());
         if (recMsg.startsWith("new")) {
             String newAtomName = recMsg.substring(3).trim();
-            bus.publish(new CreateGroupChatEvent(newAtomName, new GroupMember("Admin", event.getConnectionURI()), event.getTargetSocketURI(), 100));
+            bus.publish(new CreateGroupChatEvent(newAtomName, event.getTargetSocketURI(), 100));
             return;
         }
         String respMsg = "Blabla " + WonRdfUtils.MessageUtils.getTextMessage(event.getWonMessage());
@@ -76,4 +79,8 @@ public class ReceiverAtomEventHandler {
         ctx.getEventBus().publish(responseCmd);
     }
 
+    @Override
+    public void onClose(CloseFromOtherAtomEvent event) {
+
+    }
 }

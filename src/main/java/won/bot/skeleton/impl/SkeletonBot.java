@@ -48,9 +48,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
     private MatcherBehaviour matcherBehaviour;
     private ServiceAtomBehaviour serviceAtomBehaviour;
 
-    private URI receiverAtomUri = null;
-    private ReceiverAtomEventHandler receiverAtomEventHandler;
-    private GroupAtomEventHandler groupAtomEventHandler;
+    private AtomMessageEventHandler messageBroker;
 
     // bean setter, used by spring
     public void setRegistrationMatcherRetryInterval(final int registrationMatcherRetryInterval) {
@@ -78,9 +76,6 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
         EventBus bus = getEventBus();
         SkeletonBotContextWrapper botContextWrapper = (SkeletonBotContextWrapper) getBotContextWrapper();
 
-        receiverAtomEventHandler = new ReceiverAtomEventHandler(botContextWrapper, ctx, bus);
-        groupAtomEventHandler = new GroupAtomEventHandler(botContextWrapper, ctx, bus);
-
         // register listeners for event.impl.command events used to tell the bot to send
         // messages
         ExecuteWonMessageCommandBehaviour wonMessageCommandBehaviour = new ExecuteWonMessageCommandBehaviour(ctx);
@@ -93,8 +88,12 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
         bus.subscribe(AtomCreatedEvent.class, new BaseEventBotAction(ctx) {
             @Override
             protected void doRun(Event event, EventListener executingListener) throws Exception {
-                if (receiverAtomUri == null) {
-                    receiverAtomUri = ((AtomCreatedEvent)event).getAtomURI();
+                if (messageBroker == null) {
+                    messageBroker = new AtomMessageBroker(
+                            ((AtomCreatedEvent)event).getAtomURI(),
+                            new ReceiverAtomEventHandler(botContextWrapper, ctx, bus),
+                            new GroupAtomEventHandler(botContextWrapper, ctx, bus)
+                    );
                 }
             }
         });
@@ -113,56 +112,35 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
         bus.subscribe(ConnectFromOtherAtomEvent.class, noInternalServiceAtomEventFilter, new BaseEventBotAction(ctx) {
             @Override
             protected void doRun(Event event, EventListener executingListener) {
-                EventListenerContext ctx = getEventListenerContext();
                 ConnectFromOtherAtomEvent connectFromOtherAtomEvent = (ConnectFromOtherAtomEvent) event;
-
-                if (isMessageForReceiverAtom(connectFromOtherAtomEvent.getAtomURI())) {
-                    receiverAtomEventHandler.receivedConnectMsg(connectFromOtherAtomEvent);
-                } else {
-                    groupAtomEventHandler.onConnect(connectFromOtherAtomEvent);
-                }
+                messageBroker.onConnect(connectFromOtherAtomEvent);
             }
         });
         // listen for the MatcherExtensionAtomCreatedEvent
         bus.subscribe(MatcherExtensionAtomCreatedEvent.class, new MatcherExtensionAtomCreatedAction(ctx));
+
+
+        // Disconnect
         bus.subscribe(CloseFromOtherAtomEvent.class, new BaseEventBotAction(ctx) {
             @Override
             protected void doRun(Event event, EventListener executingListener) {
-                EventListenerContext ctx = getEventListenerContext();
                 CloseFromOtherAtomEvent closeFromOtherAtomEvent = (CloseFromOtherAtomEvent) event;
-                URI targetSocketUri = closeFromOtherAtomEvent.getSocketURI();
-                URI senderSocketUri = closeFromOtherAtomEvent.getTargetSocketURI();
-                logger.info("Remove a closed connection " + senderSocketUri + " -> " + targetSocketUri
-                                + " from the botcontext ");
-                botContextWrapper.removeConnectedSocket(senderSocketUri, targetSocketUri);
+                messageBroker.onClose(closeFromOtherAtomEvent);
             }
         });
 
         // Create GropuChat Atom
-        bus.subscribe(CreateGroupChatEvent.class, new CreateGroupChatAtomAction(botContextWrapper, ctx));
+        bus.subscribe(CreateGroupChatEvent.class, new CreateGroupChatAtomAction(ctx));
 
 
         // Receiving Messages in connections
         bus.subscribe(MessageFromOtherAtomEvent.class, noInternalServiceAtomEventFilter, new BaseEventBotAction(ctx) {
             @Override
             protected void doRun(Event event, EventListener executingListener) {
-                EventListenerContext ctx = getEventListenerContext();
-
                 MessageFromOtherAtomEvent recEvent = (MessageFromOtherAtomEvent) event;
-                if (isMessageForReceiverAtom(recEvent.getAtomURI())) {
-                    receiverAtomEventHandler.receivedMessage(recEvent);
-                } else {
-                    groupAtomEventHandler.onMessage(recEvent);
-                    // Get All Atoms of chat (buffer them local in the context)
-                    //
-                    //WonLinkedDataUtils.getConnectionURIForSocketAndTargetSocket()
-                }
+                messageBroker.onMessage(recEvent);
             }
         });
     }
 
-
-    private boolean isMessageForReceiverAtom(URI atomUri) {
-        return atomUri.equals(receiverAtomUri);
-    }
 }
