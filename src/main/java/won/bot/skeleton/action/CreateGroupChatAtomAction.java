@@ -114,7 +114,7 @@ public class CreateGroupChatAtomAction extends AbstractCreateAtomAction {
         image.addProperty(RDF.type, SCHEMA.URL);
         //image.addProperty(SCHEMA.VALUE, chuckNorrisJoke.getIcon_url());
         // s:description
-        atom.addProperty(SCHEMA.DESCRIPTION, "Coop Group chat for place finding. Join the group with your nicname as opening message");
+        atom.addProperty(SCHEMA.DESCRIPTION, "Coop Group chat for place finding. Join the group with your nickname as opening message");
         // s:name
         atom.addProperty(SCHEMA.NAME, event.getName());
         if (event.getMax() > 1) {

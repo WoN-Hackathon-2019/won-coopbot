@@ -1,22 +1,17 @@
 package won.bot.skeleton.cli;
 
 import at.apf.easycli.annotation.Command;
-import at.apf.easycli.annotation.DefaultValue;
 import at.apf.easycli.annotation.Meta;
-import won.bot.framework.bot.context.BotContextWrapper;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.bus.EventBus;
 import won.bot.framework.eventbot.event.impl.command.connectionmessage.ConnectionMessageCommandEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
-import won.bot.skeleton.event.CreateGroupChatEvent;
-import won.bot.skeleton.impl.SkeletonBot;
 import won.bot.skeleton.model.GroupMember;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
 
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GroupCliExecuter {
 
@@ -49,14 +44,17 @@ public class GroupCliExecuter {
 
     @Command("/listMembers")
     public void listGroupMembers(@Meta MessageFromOtherAtomEvent event) {
-        List<String> groupMembers = wrapper.getGroupMembers(event.getAtomURI()).stream()
-              .map(GroupMember::getName)
-              .collect(Collectors.toList());
+        List<GroupMember> groupMembers = wrapper.getGroupMembers(event.getAtomURI());
+
+        URI adminConnectionUri = wrapper.getGroup(event.getAtomURI()).getAdminConnectionUri();
 
         StringBuilder builder = new StringBuilder("Groupmembers:");
-        for (String member: groupMembers) {
+        for (GroupMember member: groupMembers) {
             builder.append("\n");
-            builder.append(member);
+            builder.append(member.getName());
+            if (member.getConnectionUri().equals(adminConnectionUri)) {
+                builder.append(" (Admin)");
+            }
         }
         bus.publish(new ConnectionMessageCommandEvent(event.getCon(), builder.toString()));
     }

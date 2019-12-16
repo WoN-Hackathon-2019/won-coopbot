@@ -13,13 +13,10 @@ import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEven
 import won.bot.skeleton.cli.GroupCliExecuter;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.model.GroupMember;
-import won.protocol.model.Connection;
-import won.protocol.util.RdfUtils;
 import won.protocol.util.WonRdfUtils;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
 
 import java.net.URI;
-import java.util.Optional;
 
 public class GroupAtomEventHandler implements AtomMessageEventHandler {
 
@@ -42,6 +39,10 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
                 botContextWrapper.getGroup(event.getAtomURI()).getCapacity()) {
             bus.publish(new CloseCommandEvent(event.getCon(), "The group is currently full."));
             return;
+        }
+
+        if (botContextWrapper.getGroupMembers(event.getAtomURI()).isEmpty()) {
+            botContextWrapper.getGroup(event.getAtomURI()).setAdminConnectionUri(event.getConnectionURI());
         }
 
         String name = WonRdfUtils.MessageUtils.getTextMessage(event.getWonMessage());
