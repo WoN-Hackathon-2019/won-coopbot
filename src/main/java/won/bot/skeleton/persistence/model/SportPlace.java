@@ -2,13 +2,12 @@ package won.bot.skeleton.persistence.model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-public class SportPlace {
+public class SportPlace implements Serializable {
 
-    @GeneratedValue
     private String id;
     private Location location;
     private String address;

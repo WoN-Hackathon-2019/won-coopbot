@@ -5,6 +5,8 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import won.bot.framework.bot.base.EventBot;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.action.BaseEventBotAction;
@@ -22,9 +24,11 @@ import won.bot.framework.extensions.matcher.MatcherBehaviour;
 import won.bot.framework.extensions.matcher.MatcherExtension;
 import won.bot.framework.extensions.serviceatom.ServiceAtomBehaviour;
 import won.bot.framework.extensions.serviceatom.ServiceAtomExtension;
+
 import won.bot.skeleton.action.CreateGroupChatAtomAction;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.event.CreateGroupChatEvent;
+import won.bot.skeleton.persistence.JsonParser;
 
 public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAtomExtension {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -33,6 +37,10 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
     private ServiceAtomBehaviour serviceAtomBehaviour;
 
     private AtomMessageEventHandler messageBroker;
+
+    @Autowired
+    @Value("${json.sportplace.import.url}")
+    private String url;
 
     // bean setter, used by spring
     public void setRegistrationMatcherRetryInterval(final int registrationMatcherRetryInterval) {
@@ -59,6 +67,8 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
         }
         EventBus bus = getEventBus();
         SkeletonBotContextWrapper botContextWrapper = (SkeletonBotContextWrapper) getBotContextWrapper();
+
+        botContextWrapper.addSportplaces(new JsonParser(url).parseData());
 
         // register listeners for event.impl.command events used to tell the bot to send
         // messages

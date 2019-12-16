@@ -1,10 +1,14 @@
 package won.bot.skeleton.context;
 
+import com.github.jsonldjava.utils.Obj;
+import net.minidev.json.JSONUtil;
 import won.bot.framework.bot.context.BotContext;
 import won.bot.framework.extensions.serviceatom.ServiceAtomEnabledBotContextWrapper;
 import won.bot.skeleton.model.Group;
 import won.bot.skeleton.model.GroupMember;
+import won.bot.skeleton.persistence.model.SportPlace;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,6 +17,7 @@ public class SkeletonBotContextWrapper extends ServiceAtomEnabledBotContextWrapp
     private final String connectedSocketsMap;
     private final String groupMemberMap = "groupmembermap";
     private final String groupMap = "groupmap";
+    private final String sportPlace = "sportPlaces";
 
     public SkeletonBotContextWrapper(BotContext botContext, String botName) {
         super(botContext, botName);
@@ -77,4 +82,16 @@ public class SkeletonBotContextWrapper extends ServiceAtomEnabledBotContextWrapp
                 .findFirst().orElseGet(null);
         getBotContext().removeFromListMap(groupMemberMap, atomUri.toString(), member);
     }
+
+    public void addSportplaces(Set<SportPlace> sportplaces) {
+        getBotContext().addToListMap(sportPlace, "places", sportplaces.toArray());
+    }
+
+    public Set<SportPlace> loadSportplaces() {
+        Map<String, List<Object>> stringListMap = getBotContext().loadListMap(sportPlace);
+       LinkedList places =  (LinkedList) stringListMap.get("places");
+
+       Object[] sportplaces = (Object []) places.getFirst();
+       return       Arrays.stream(sportplaces).map(sp -> (SportPlace) sp).collect(Collectors.toSet());
+   }
 }
