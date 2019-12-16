@@ -1,13 +1,10 @@
-import com.peertopark.java.geocalc.*;
+package won.bot.skeleton.service;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit4.SpringRunner;
 import won.bot.skeleton.persistence.model.Location;
 import won.bot.skeleton.persistence.model.SportPlace;
-import won.bot.skeleton.service.PlaceRankingService;
 
 import java.util.ArrayList;
 import java.util.List;

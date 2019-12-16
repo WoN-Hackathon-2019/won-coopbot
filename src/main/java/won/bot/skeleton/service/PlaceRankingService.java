@@ -1,5 +1,6 @@
 package won.bot.skeleton.service;
 
+import at.apf.easycli.util.Tuple;
 import com.peertopark.java.geocalc.EarthCalc;
 import org.springframework.stereotype.Service;
 import won.bot.skeleton.persistence.model.Location;
@@ -26,7 +27,7 @@ public class PlaceRankingService {
                                                List<SportPlace> candidatePlaces,
                                                int number) {
 
-        List<LocationDistanceTuple> distanceTuples = new ArrayList<>();
+        List<Tuple<SportPlace, Double>> distanceTuples = new ArrayList<>();
 
         /* calculate combined distance from every person to the candidate location for every place */
         for (SportPlace place: candidatePlaces) {
@@ -34,12 +35,12 @@ public class PlaceRankingService {
             for (Location personLocation: personLocations) {
                 distance += EarthCalc.getDistance(personLocation.toPoint(), place.getLocation().toPoint());
             }
-            distanceTuples.add(new LocationDistanceTuple(place, distance));
+            distanceTuples.add(new Tuple<>(place, distance));
         }
 
         return distanceTuples.stream()
-                .sorted(Comparator.comparingDouble(LocationDistanceTuple::getCombinedDistance))
-                .map(LocationDistanceTuple::getSportPlace)
+                .sorted(Comparator.comparingDouble(Tuple::getValue))
+                .map(Tuple::getKey)
                 .limit(number)
                 .collect(Collectors.toList());
     }
