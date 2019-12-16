@@ -2,6 +2,7 @@ package won.bot.skeleton.cli;
 
 import at.apf.easycli.annotation.Command;
 import at.apf.easycli.annotation.Meta;
+import at.apf.easycli.annotation.Usage;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.action.BaseEventBotAction;
 import won.bot.framework.eventbot.action.EventBotActionUtils;
@@ -36,6 +37,7 @@ public class GroupCliExecuter {
     }
 
     @Command("/setName")
+    @Usage("name")
     public void createNewGroup(String name, @Meta MessageFromOtherAtomEvent event) {
         /* search the connected Group member */
         GroupMember member = wrapper.getGroupMembers(event.getAtomURI()).stream()
@@ -70,6 +72,7 @@ public class GroupCliExecuter {
     }
 
     @Command("/remove")
+    @Usage("name")
     public void removeMember(String name, @Meta MessageFromOtherAtomEvent event) {
         URI adminConnectionUri = wrapper.getGroup(event.getAtomURI()).getAdminConnectionUri();
         if (!adminConnectionUri.equals(event.getConnectionURI())) {

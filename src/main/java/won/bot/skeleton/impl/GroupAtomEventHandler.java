@@ -1,6 +1,8 @@
 package won.bot.skeleton.impl;
 
 import at.apf.easycli.CliEngine;
+import at.apf.easycli.exception.CommandNotFoundException;
+import at.apf.easycli.exception.MalformedCommandException;
 import at.apf.easycli.impl.EasyEngine;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.bus.EventBus;
@@ -66,6 +68,11 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
             try {
                 cliEngine.parse(msg, event);
                 return;
+            } catch (MalformedCommandException e) {
+                bus.publish(new ConnectionMessageCommandEvent(event.getCon(), e.getMessage()));
+                bus.publish(new ConnectionMessageCommandEvent(event.getCon(),cliEngine.usage(msg.split(" ")[0])));
+            } catch (CommandNotFoundException e) {
+                bus.publish(new ConnectionMessageCommandEvent(event.getCon(), "Command : " + msg + " not known!\nUse one of the following commands:\n" + cliEngine.listCommands()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
