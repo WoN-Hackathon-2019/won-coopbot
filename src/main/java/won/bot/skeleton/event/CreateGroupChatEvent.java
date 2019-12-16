@@ -15,7 +15,7 @@ public class CreateGroupChatEvent extends BaseEvent {
     public CreateGroupChatEvent(String category, URI adminSocketUri, int max) {
         this.max = max;
         this.category = category;
-        this.name = category + " GropuChannel";
+        this.name = category + " GroupChannel";
         this.adminSocketUri = adminSocketUri;
     }
 
