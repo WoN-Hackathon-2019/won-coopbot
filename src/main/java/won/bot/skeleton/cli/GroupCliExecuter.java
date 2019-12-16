@@ -15,6 +15,8 @@ import won.bot.skeleton.model.GroupMember;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
 
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GroupCliExecuter {
 
@@ -43,6 +45,20 @@ public class GroupCliExecuter {
         String nameChangeNotification = oldName + " changed name to " + name;
         sendBroadcastMessage(nameChangeNotification, event.getAtomURI(), event.getConnectionURI());
         bus.publish(new ConnectionMessageCommandEvent(event.getCon(), nameChangeNotification));
+    }
+
+    @Command("/listMembers")
+    public void listGroupMembers(@Meta MessageFromOtherAtomEvent event) {
+        List<String> groupMembers = wrapper.getGroupMembers(event.getAtomURI()).stream()
+              .map(GroupMember::getName)
+              .collect(Collectors.toList());
+
+        StringBuilder builder = new StringBuilder("Groupmembers:");
+        for (String member: groupMembers) {
+            builder.append("\n");
+            builder.append(member);
+        }
+        bus.publish(new ConnectionMessageCommandEvent(event.getCon(), builder.toString()));
     }
 
     private void sendBroadcastMessage(String msg, URI atomUri, URI senderConUri) {
