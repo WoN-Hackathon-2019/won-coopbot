@@ -116,8 +116,6 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
                 messageBroker.onConnect(connectFromOtherAtomEvent);
             }
         });
-        // listen for the MatcherExtensionAtomCreatedEvent
-        bus.subscribe(MatcherExtensionAtomCreatedEvent.class, new MatcherExtensionAtomCreatedAction(ctx));
 
 
         // Disconnect
