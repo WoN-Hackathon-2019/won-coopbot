@@ -1,5 +1,7 @@
 package won.bot.skeleton.impl;
 
+import at.apf.easycli.CliEngine;
+import at.apf.easycli.impl.EasyEngine;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.bus.EventBus;
 import won.bot.framework.eventbot.event.impl.command.close.CloseCommandEvent;
@@ -8,6 +10,7 @@ import won.bot.framework.eventbot.event.impl.command.connectionmessage.Connectio
 import won.bot.framework.eventbot.event.impl.wonmessage.CloseFromOtherAtomEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.ConnectFromOtherAtomEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
+import won.bot.skeleton.cli.GroupCliExecuter;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.model.GroupMember;
 import won.protocol.model.Connection;
@@ -23,11 +26,14 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
     private SkeletonBotContextWrapper botContextWrapper;
     private EventListenerContext ctx;
     private EventBus bus;
+    private CliEngine cliEngine;
 
     public GroupAtomEventHandler(SkeletonBotContextWrapper botContextWrapper, EventListenerContext ctx, EventBus bus) {
         this.botContextWrapper = botContextWrapper;
         this.ctx = ctx;
         this.bus = bus;
+        this.cliEngine = new EasyEngine();
+        this.cliEngine.register(new GroupCliExecuter(ctx, bus));
     }
 
     @Override
@@ -53,6 +59,16 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
     public void onMessage(MessageFromOtherAtomEvent event) {
         // Forward message to all participants
         String msg = WonRdfUtils.MessageUtils.getTextMessage(event.getWonMessage());
+
+        if(msg.startsWith("/")) {
+            try {
+                cliEngine.parse(msg, event);
+                return;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         GroupMember member = botContextWrapper.getGroupMembers(event.getAtomURI()).stream()
                 .filter(m -> event.getConnectionURI().equals(m.getConnectionUri()))
                 .findFirst().orElseGet(null);

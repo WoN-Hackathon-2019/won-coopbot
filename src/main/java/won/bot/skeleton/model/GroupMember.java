@@ -20,4 +20,8 @@ public class GroupMember implements Serializable {
     public URI getConnectionUri() {
         return connectionUri;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
