@@ -12,6 +12,7 @@ import won.bot.framework.eventbot.event.impl.wonmessage.ConnectFromOtherAtomEven
 import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
 import won.bot.skeleton.cli.GroupCliExecuter;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
+import won.bot.skeleton.model.Group;
 import won.bot.skeleton.model.GroupMember;
 import won.protocol.util.WonRdfUtils;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
@@ -86,6 +87,15 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
         if (member != null) {
             botContextWrapper.removeGroupMember(event.getAtomURI(), event.getConnectionURI());
             sendAll(member.getName() + " left the group", event.getAtomURI(), event.getConnectionURI());
+        }
+
+        /* handle last member leaves group */
+        if (botContextWrapper.getGroupMembers(event.getAtomURI()).isEmpty()) {
+            //TODO handle no remaining groupmembers
+        } else if (member.getConnectionUri().equals(botContextWrapper.getGroup(event.getAtomURI()).getAdminConnectionUri())) {
+            GroupMember newAdmin = botContextWrapper.getGroupMembers(event.getAtomURI()).get(0);
+            botContextWrapper.getGroup(event.getAtomURI()).setAdminConnectionUri(newAdmin.getConnectionUri());
+            sendAll(newAdmin.getName() + " is the new admin of this group", event.getAtomURI(), event.getConnectionURI());
         }
     }
 
