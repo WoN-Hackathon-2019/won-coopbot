@@ -83,9 +83,7 @@ public class JsonParser {
 		Map geoMap = (HashMap<String, ?>) element.get("geometry");
 		JSONArray coord = (JSONArray) geoMap.get("coordinates");
 
-		Location location = new Location();
-		location.setLatitude((double) coord.get(0));
-		location.setLongitude((double) coord.get(1));
+		Location location = new Location((double) coord.get(0), (double) coord.get(1));
 		return location;
 	}
 
