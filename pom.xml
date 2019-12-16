@@ -55,6 +55,13 @@
             <version>1.6.6</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>at.apf.easycli</groupId>
+            <artifactId>easy-cli</artifactId>
+            <version>0.4</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
