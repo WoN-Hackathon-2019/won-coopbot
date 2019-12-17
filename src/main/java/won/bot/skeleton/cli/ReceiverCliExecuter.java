@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import won.bot.skeleton.persistence.model.SportPlace;
 import won.bot.skeleton.service.AtomLocationService;
 import won.protocol.model.Coordinate;
 import won.protocol.util.DefaultAtomModelWrapper;
