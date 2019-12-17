@@ -145,7 +145,7 @@ public class GroupCliExecuter {
     }
 
     @Command("/findNearestPlaces")
-    @Usage("[number]")
+    @Usage("\\[number\\]")
     public void findNearestPlaces(@DefaultValue("1") int number, @Meta MessageFromOtherAtomEvent event) {
         List<Location> personLocations = new ArrayList<>();
 
