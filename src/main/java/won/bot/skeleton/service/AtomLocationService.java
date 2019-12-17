@@ -4,6 +4,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Property;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
+import won.bot.skeleton.model.GroupMember;
 import won.bot.skeleton.persistence.model.Location;
 import won.protocol.model.Coordinate;
 import won.protocol.util.AtomModelWrapper;
@@ -15,6 +16,7 @@ import won.protocol.vocabulary.SCHEMA;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class AtomLocationService {
@@ -40,5 +42,12 @@ public class AtomLocationService {
         Dataset atomData = ctx.getLinkedDataSource().getDataForResource(atomUri);
         DefaultAtomModelWrapper amw = new DefaultAtomModelWrapper(atomData);
         return amw.getLocationCoordinate();
+    }
+
+    public List<Coordinate> getGroupMemberLocations(URI atomUri) {
+        return ((SkeletonBotContextWrapper)ctx.getBotContextWrapper()).getGroupMembers(atomUri).stream()
+                .map(GroupMember::getLocation)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

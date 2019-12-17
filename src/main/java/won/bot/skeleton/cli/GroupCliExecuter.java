@@ -168,7 +168,7 @@ public class GroupCliExecuter {
      }
 
     @Command("/meet")
-    public void asdf(@Meta MessageFromOtherAtomEvent event) {
+    public void meet(@Meta MessageFromOtherAtomEvent event) {
         bus.publish(new CreateLocationApiAtomEvent(event.getAtomURI()));
     }
 
