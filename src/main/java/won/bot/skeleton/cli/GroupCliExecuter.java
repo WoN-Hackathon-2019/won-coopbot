@@ -1,11 +1,16 @@
 package won.bot.skeleton.cli;
 
 import at.apf.easycli.annotation.Command;
+import at.apf.easycli.annotation.DefaultValue;
 import at.apf.easycli.annotation.Meta;
 import at.apf.easycli.annotation.Usage;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.action.BaseEventBotAction;
-import won.bot.framework.eventbot.action.EventBotActionUtils;
 import won.bot.framework.eventbot.bus.EventBus;
 import won.bot.framework.eventbot.event.Event;
 import won.bot.framework.eventbot.event.impl.command.close.CloseCommandEvent;
@@ -19,11 +24,20 @@ import won.bot.framework.eventbot.listener.impl.ActionOnFirstEventListener;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.event.CreateLocationApiAtomEvent;
 import won.bot.skeleton.model.GroupMember;
+import won.bot.skeleton.persistence.model.Location;
+import won.bot.skeleton.persistence.model.SportPlace;
+import won.bot.skeleton.service.AtomLocationService;
+import won.bot.skeleton.service.PlaceRankingService;
+import won.protocol.message.WonMessage;
 import won.protocol.model.Connection;
+import won.protocol.model.Coordinate;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
+import won.protocol.vocabulary.SCHEMA;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GroupCliExecuter {
 
@@ -62,11 +76,32 @@ public class GroupCliExecuter {
         URI adminConnectionUri = wrapper.getGroup(event.getAtomURI()).getAdminConnectionUri();
 
         StringBuilder builder = new StringBuilder("Groupmembers:");
-        for (GroupMember member: groupMembers) {
+        for (GroupMember member : groupMembers) {
             builder.append("\n");
             builder.append(member.getName());
             if (member.getConnectionUri().equals(adminConnectionUri)) {
                 builder.append(" (Admin)");
+            }
+        }
+        bus.publish(new ConnectionMessageCommandEvent(event.getCon(), builder.toString()));
+    }
+
+    @Command("/listWithLocation")
+    public void listWithLocations(@Meta MessageFromOtherAtomEvent event) {
+        List<GroupMember> groupMembers = wrapper.getGroupMembers(event.getAtomURI());
+
+        URI adminConnectionUri = wrapper.getGroup(event.getAtomURI()).getAdminConnectionUri();
+
+        StringBuilder builder = new StringBuilder("Groupmembers:");
+        for (GroupMember member : groupMembers) {
+            builder.append("\n");
+            builder.append(member.getName());
+            if (member.getLocation() != null) {
+                builder.append("{ lat: ");
+                builder.append(member.getLocation().getLatitude());
+                builder.append(", lng: ");
+                builder.append(member.getLocation().getLongitude());
+                builder.append("}");
             }
         }
         bus.publish(new ConnectionMessageCommandEvent(event.getCon(), builder.toString()));
@@ -107,10 +142,60 @@ public class GroupCliExecuter {
         }));
         bus.publish(closeCommandEvent);
 
-     }
+    }
+
+    @Command("/findNearestPlaces")
+    @Usage("[number]")
+    public void findNearestPlaces(@DefaultValue("1") int number, @Meta MessageFromOtherAtomEvent event) {
+        List<Location> personLocations = new ArrayList<>();
+
+        AtomLocationService atomLocationService = new AtomLocationService(ctx);
+        List<Coordinate> groupMemberLocations = atomLocationService.getGroupMemberLocations(event.getAtomURI());
+        groupMemberLocations.forEach(loc -> personLocations.add(new Location(loc.getLatitude(), loc.getLongitude())));
+
+        List<SportPlace> suggestedPlaces = new PlaceRankingService().getSuggestedPlaces(personLocations, wrapper.loadSportplaces().stream().collect(Collectors.toList()), number);
+        StringBuilder sb = new StringBuilder();
+        suggestedPlaces.forEach(place -> {
+            sb.append(place.toString());
+            sb.append("\n");
+        });
+        bus.publish(new ConnectionMessageCommandEvent(event.getCon(), sb.toString()));
+    }
+
+
+    @Command("/setLocation")
+    @Usage("(attach location to the msg)")
+    private void setLocation(@Meta MessageFromOtherAtomEvent event) {
+        try {
+            WonMessage msg = event.getWonMessage();
+            Dataset content = msg.getMessageContent();
+            String graphName = content.listNames().next();
+            Model m = content.getNamedModel(graphName);
+            Resource msgRes = m.getResource(msg.getMessageURI().toString());
+            Resource loc = msgRes.getPropertyResourceValue(SCHEMA.LOCATION);
+            Resource geo = loc.getPropertyResourceValue(SCHEMA.GEO);
+            Statement stmt = geo.getProperty(SCHEMA.LATITUDE);
+            float lat = stmt.getObject().asLiteral().getFloat();
+            Statement stmt2 = geo.getProperty(SCHEMA.LONGITUDE);
+            float lng = stmt2.getObject().asLiteral().getFloat();
+
+            /* save location to user */
+            GroupMember member = wrapper.getGroupMembers(event.getAtomURI()).stream()
+                    .filter(g -> g.getConnectionUri().equals(event.getConnectionURI()))
+                    .findFirst()
+                    .orElseGet(null);
+
+            if (member != null) {
+                member.setLocation(new Coordinate(lat, lng));
+            }
+
+        } catch (Exception e) {
+            bus.publish(new ConnectionMessageCommandEvent(event.getCon(), "No location attached to msg!"));
+        }
+    }
 
     @Command("/meet")
-    public void asdf(@Meta MessageFromOtherAtomEvent event) {
+    public void meet(@Meta MessageFromOtherAtomEvent event) {
         bus.publish(new CreateLocationApiAtomEvent(event.getAtomURI()));
     }
 
@@ -122,7 +207,4 @@ public class GroupCliExecuter {
                 .map(con -> con.get())
                 .forEach(con -> bus.publish(new ConnectionMessageCommandEvent(con, msg)));
     }
-
-
-
 }

@@ -101,21 +101,25 @@ public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
 
                     Thread.sleep(1000);
 
-                    // TODO: Send request and waint for response
-                    List<Coordinate> locations = new AtomLocationService(ctx).getGroupLocations(groupAtomUri);
+                    // Send request and wait for response
+                    List<Coordinate> locations = new AtomLocationService(ctx).getGroupMemberLocations(groupAtomUri);
                     StringBuilder sb = new StringBuilder();
-                    sb.append("/json \"");
-                    sb.append("{\\\"locations\\\": [");
-                    for (int i = 0; i < locations.size(); i++) {
-                        sb.append("[" + locations.get(i).getLatitude() + ", " + locations.get(i).getLongitude() + "]");
-                        if (i + 1 < locations.size()) {
-                            sb.append(", ");
-                        }
-                    }
-                    sb.append("],");
-                    sb.append("\\\"categories\\\": [\\\"Socker Field\\\", \\\"Socker Stadium\\\"]}");
-                    sb.append("\"");
+                    if (locations.isEmpty()) {
+                        sb.append("/json \"{\\\"locations\\\"[ 47.414601, 9.729089],\\\"categories\\\": [\\\"Soccer Field\\\", \\\"Soccer Stadium\\\"]}\"");
+                    } else {
 
+                        sb.append("/json \"");
+                        sb.append("{\\\"locations\\\": [");
+                        for (int i = 0; i < locations.size(); i++) {
+                            sb.append("[" + locations.get(i).getLatitude() + ", " + locations.get(i).getLongitude() + "]");
+                            if (i + 1 < locations.size()) {
+                                sb.append(", ");
+                            }
+                        }
+                        sb.append("],");
+                        sb.append("\\\"categories\\\": [\\\"Soccer Field\\\", \\\"Soccer Stadium\\\"]}");
+                        sb.append("\"");
+                    }
 
 
                     bus.publish(new ConnectionMessageCommandEvent(connectFromOtherAtomEvent.getCon(), sb.toString()));

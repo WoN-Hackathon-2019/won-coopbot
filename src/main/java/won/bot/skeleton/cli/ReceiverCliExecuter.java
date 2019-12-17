@@ -65,10 +65,8 @@ public class ReceiverCliExecuter {
         }
 
         sportPlaces.forEach(place -> {
-            sb.append(place.getAddress());
-            sb.append(" (Category: ");
-            place.getCategory().forEach(cat -> sb.append(cat));
-            sb.append(")\n");
+            sb.append(place.toString());
+            sb.append("\n");
         });
         bus.publish(new ConnectionMessageCommandEvent(event.getCon(), sb.toString()));
     }

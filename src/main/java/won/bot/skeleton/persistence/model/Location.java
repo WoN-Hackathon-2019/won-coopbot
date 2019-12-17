@@ -5,7 +5,6 @@ import com.peertopark.java.geocalc.Point;
 
 import javax.persistence.Entity;
 
-@Entity
 public class Location {
 
     private double latitude;
