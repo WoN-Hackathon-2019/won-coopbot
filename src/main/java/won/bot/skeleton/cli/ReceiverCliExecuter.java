@@ -8,6 +8,7 @@ import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.bus.EventBus;
 import won.bot.framework.eventbot.event.impl.command.connectionmessage.ConnectionMessageCommandEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
+import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.event.CreateGroupChatEvent;
 import won.bot.skeleton.service.AtomLocationService;
 import won.protocol.model.Coordinate;
@@ -28,6 +29,14 @@ public class ReceiverCliExecuter {
     @Usage("name \\[capacity\\]")
     public void createNewGroup(String name, @DefaultValue("100") int capacity, @Meta MessageFromOtherAtomEvent event) {
         bus.publish(new CreateGroupChatEvent(name, event.getTargetSocketURI(), capacity));
+    }
+
+    @Command("/list")
+    public void listAllGroups(@Meta MessageFromOtherAtomEvent event) {
+        StringBuilder sb = new StringBuilder();
+        ((SkeletonBotContextWrapper) this.ctx.getBotContextWrapper()).getAllGroups().stream()
+                .forEach(g -> sb.append(g.getName() + "\n"));
+        bus.publish(new ConnectionMessageCommandEvent(event.getCon(), sb.toString()));
     }
 
 
