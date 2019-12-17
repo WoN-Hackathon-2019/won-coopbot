@@ -20,6 +20,7 @@ import won.bot.skeleton.model.Group;
 import won.bot.skeleton.model.GroupMember;
 import won.bot.skeleton.service.AtomLocationService;
 import won.protocol.model.Connection;
+import won.protocol.model.Coordinate;
 import won.protocol.util.RdfUtils;
 import won.protocol.util.WonRdfUtils;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
@@ -57,7 +58,8 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
         }
 
         String name = WonRdfUtils.MessageUtils.getTextMessage(event.getWonMessage());
-        botContextWrapper.addGroupMember(event.getAtomURI(), new GroupMember(name, event.getConnectionURI()));
+        GroupMember member = new GroupMember(name, event.getConnectionURI());
+        botContextWrapper.addGroupMember(event.getAtomURI(), member);
         String message = "Hello " + name + ". You joined the groupchat.";
         final ConnectCommandEvent connectCommandEvent = new ConnectCommandEvent(
                 event.getRecipientSocket(),
@@ -65,6 +67,15 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
         bus.publish(connectCommandEvent);
 
         sendAll(name + " joined the group", event.getAtomURI(), event.getConnectionURI());
+
+        AtomLocationService atomLocationService = new AtomLocationService(ctx);
+        Coordinate loc = atomLocationService.getAtomLocation(event.getCon().getTargetAtomURI());
+        if (loc == null) {
+            /* ask for location */
+            bus.publish(new ConnectionMessageCommandEvent(event.getCon(), "Your location has not been found. Using default location! To specify your location use \"/setLocation\" with your location attached"));
+        } else {
+            member.setLocation(loc);
+        }
     }
 
     @Override
