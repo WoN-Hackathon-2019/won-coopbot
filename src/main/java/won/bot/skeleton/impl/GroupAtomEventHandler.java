@@ -10,6 +10,7 @@ import won.bot.framework.eventbot.event.impl.wonmessage.ConnectFromOtherAtomEven
 import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.model.GroupMember;
+import won.bot.skeleton.service.AtomLocationService;
 import won.protocol.model.Connection;
 import won.protocol.util.RdfUtils;
 import won.protocol.util.WonRdfUtils;
@@ -23,11 +24,13 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
     private SkeletonBotContextWrapper botContextWrapper;
     private EventListenerContext ctx;
     private EventBus bus;
+    private AtomLocationService als;
 
     public GroupAtomEventHandler(SkeletonBotContextWrapper botContextWrapper, EventListenerContext ctx, EventBus bus) {
         this.botContextWrapper = botContextWrapper;
         this.ctx = ctx;
         this.bus = bus;
+        this.als = new AtomLocationService(ctx);
     }
 
     @Override
@@ -56,6 +59,7 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
         GroupMember member = botContextWrapper.getGroupMembers(event.getAtomURI()).stream()
                 .filter(m -> event.getConnectionURI().equals(m.getConnectionUri()))
                 .findFirst().orElseGet(null);
+
         if (member != null) {
             sendAll(member.getName() + ": " + msg, event.getAtomURI(), event.getConnectionURI());
         }
