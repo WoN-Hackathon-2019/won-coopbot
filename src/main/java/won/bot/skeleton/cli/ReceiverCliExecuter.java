@@ -68,7 +68,7 @@ public class ReceiverCliExecuter {
     }
 
 
-    @Command("/joinGroup")
+    @Command("/join")
     @Usage("groupname")
     public void joinGroup(String groupName, @Meta MessageFromOtherAtomEvent event) {
         SkeletonBotContextWrapper wrapper = (SkeletonBotContextWrapper) ctx.getBotContextWrapper();
