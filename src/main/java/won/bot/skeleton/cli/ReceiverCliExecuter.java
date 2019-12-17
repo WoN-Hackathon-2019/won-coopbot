@@ -3,6 +3,7 @@ package won.bot.skeleton.cli;
 import at.apf.easycli.annotation.Command;
 import at.apf.easycli.annotation.DefaultValue;
 import at.apf.easycli.annotation.Meta;
+import at.apf.easycli.annotation.Usage;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.bus.EventBus;
 import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
@@ -19,6 +20,7 @@ public class ReceiverCliExecuter {
     }
 
     @Command("/new")
+    @Usage("name \\[capacity\\]")
     public void createNewGroup(String name, @DefaultValue("100") int capacity, @Meta MessageFromOtherAtomEvent event) {
         bus.publish(new CreateGroupChatEvent(name, event.getTargetSocketURI(), capacity));
     }

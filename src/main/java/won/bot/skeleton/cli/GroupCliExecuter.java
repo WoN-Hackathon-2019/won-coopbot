@@ -98,7 +98,7 @@ public class GroupCliExecuter {
             protected void doRun(Event event1, EventListener eventListener) throws Exception {
                 CloseCommandResultEvent closeCommandResultEvent = (CloseCommandSuccessEvent) event1;
                 if (!closeCommandResultEvent.isSuccess()) {
-                    bus.publish(new ConnectionMessageCommandEvent(event.getCon(), "Could nor remove user"));
+                    bus.publish(new ConnectionMessageCommandEvent(event.getCon(), "Could not remove user"));
                 } else {
                     sendBroadcastMessage("Admin removed  " + name, event.getAtomURI(), null);
                 }
