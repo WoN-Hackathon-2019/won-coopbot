@@ -55,10 +55,10 @@ public class AtomMessageBroker implements AtomMessageEventHandler {
 
     private boolean isMessageForGroupAtom(URI atomUri) {
         // TODO: Change g.getAdminConnectionUri() to g.getAtomUri()
-        /*return botContextWrapper.getAllGroups().stream()
-                .filter(g -> g.getAdminConnectionUri().equals(atomUri))
-                .findAny().isPresent();*/
-        return true;
+        return botContextWrapper.getAllGroups().stream()
+                .filter(g -> g.getGroupAtomUri().equals(atomUri))
+                .findAny().isPresent();
+        //return true;
     }
 
 }
