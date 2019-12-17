@@ -5,10 +5,12 @@ import at.apf.easycli.exception.CommandNotFoundException;
 import at.apf.easycli.exception.MalformedCommandException;
 import at.apf.easycli.impl.EasyEngine;
 import won.bot.framework.eventbot.EventListenerContext;
+import won.bot.framework.eventbot.action.impl.wonmessage.execCommand.ExecuteDeactivateAtomCommandAction;
 import won.bot.framework.eventbot.bus.EventBus;
 import won.bot.framework.eventbot.event.impl.command.close.CloseCommandEvent;
 import won.bot.framework.eventbot.event.impl.command.connect.ConnectCommandEvent;
 import won.bot.framework.eventbot.event.impl.command.connectionmessage.ConnectionMessageCommandEvent;
+import won.bot.framework.eventbot.event.impl.command.deactivate.DeactivateAtomCommandEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.CloseFromOtherAtomEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.ConnectFromOtherAtomEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
@@ -98,7 +100,9 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
 
         /* handle last member leaves group */
         if (botContextWrapper.getGroupMembers(event.getAtomURI()).isEmpty()) {
-            //TODO handle no remaining groupmembers
+            DeactivateAtomCommandEvent deactivateCommand = new DeactivateAtomCommandEvent(event.getAtomURI());
+            bus.publish(deactivateCommand);
+            botContextWrapper.removeGroup(event.getAtomURI());
         } else if (member.getConnectionUri().equals(botContextWrapper.getGroup(event.getAtomURI()).getAdminConnectionUri())) {
             GroupMember newAdmin = botContextWrapper.getGroupMembers(event.getAtomURI()).get(0);
             botContextWrapper.getGroup(event.getAtomURI()).setAdminConnectionUri(newAdmin.getConnectionUri());
