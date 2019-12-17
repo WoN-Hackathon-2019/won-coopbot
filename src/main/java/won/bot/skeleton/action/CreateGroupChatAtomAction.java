@@ -73,7 +73,7 @@ public class CreateGroupChatAtomAction extends AbstractCreateAtomAction {
         EventBus bus = ctx.getEventBus();
         EventListener successCallback = event -> {
             logger.debug("atom creation successful, new atom URI is {}", atomURI);
-            botContextWrapper.addGroup(atomURI, new Group(e.getName(), e.getMax()));
+            botContextWrapper.addGroup(atomURI, new Group(e.getName(), e.getMax(), atomURI));
             bus.publish(new AtomCreatedEvent(atomURI, wonNodeUri, dataset, null));
             ConnectCommandEvent connectToAdminEvent = new ConnectCommandEvent(
                     URI.create(amw.getDefaultSocket().get()),
