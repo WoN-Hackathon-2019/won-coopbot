@@ -76,9 +76,9 @@ public class ReceiverAtomEventHandler implements AtomMessageEventHandler {
         if (recMsg.startsWith("/")) {
             try {
                 cliEngine.parse(recMsg, event);
-                //System.out.println(result);
             } catch (Exception e) {
-               e.printStackTrace();
+                // TODO: Send usage
+                e.printStackTrace();
             }
             return;
         }
