@@ -24,7 +24,6 @@ import won.bot.skeleton.model.GroupMember;
 import won.protocol.message.WonMessage;
 import won.protocol.model.Connection;
 import won.protocol.model.Coordinate;
-import won.protocol.util.WonRdfUtils;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
 import won.protocol.vocabulary.SCHEMA;
 
@@ -166,6 +165,11 @@ public class GroupCliExecuter {
             bus.publish(new ConnectionMessageCommandEvent(event.getCon(), "No location attached to msg!"));
         }
      }
+
+    @Command("/meet")
+    public void asdf(@Meta MessageFromOtherAtomEvent event) {
+        bus.publish(new CreateLocationApiAtomEvent(event.getAtomURI()));
+    }
 
     private void sendBroadcastMessage(String msg, URI atomUri, URI senderConUri) {
         wrapper.getGroupMembers(atomUri).stream()

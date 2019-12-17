@@ -14,6 +14,7 @@ import won.bot.framework.eventbot.event.impl.command.connectionmessage.Connectio
 import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.event.CreateGroupChatEvent;
+import won.bot.skeleton.event.CreateLocationApiAtomEvent;
 import won.bot.skeleton.model.Group;
 
 import java.net.URI;
