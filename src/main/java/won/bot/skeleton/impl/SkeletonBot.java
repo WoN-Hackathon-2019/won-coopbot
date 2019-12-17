@@ -27,8 +27,10 @@ import won.bot.framework.extensions.matcher.MatcherExtensionAtomCreatedEvent;
 import won.bot.framework.extensions.serviceatom.ServiceAtomBehaviour;
 import won.bot.framework.extensions.serviceatom.ServiceAtomExtension;
 import won.bot.skeleton.action.CreateGroupChatAtomAction;
+import won.bot.skeleton.action.CreateLocationApiAtomAction;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.event.CreateGroupChatEvent;
+import won.bot.skeleton.event.CreateLocationApiAtomEvent;
 import won.protocol.model.Coordinate;
 import won.protocol.util.DefaultAtomModelWrapper;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
@@ -87,7 +89,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
                     DefaultAtomModelWrapper amw = new DefaultAtomModelWrapper(((AtomCreatedEvent) event).getAtomDataset());
                     receiverAtomSocketUri = URI.create(amw.getDefaultSocket().get());
                     messageBroker = new AtomMessageBroker(
-                            ((AtomCreatedEvent)event).getAtomURI(),
+                            ctx,
                             new ReceiverAtomEventHandler(botContextWrapper, ctx, bus),
                             new GroupAtomEventHandler(botContextWrapper, ctx, bus)
                     );
@@ -127,6 +129,8 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
         // Create GropuChat Atom
         bus.subscribe(CreateGroupChatEvent.class, new CreateGroupChatAtomAction(ctx));
 
+        // LocationApi Atom Creation
+        bus.subscribe(CreateLocationApiAtomEvent.class, new CreateLocationApiAtomAction(ctx));
 
         // Receiving Messages in connections
         bus.subscribe(MessageFromOtherAtomEvent.class, noInternalServiceAtomEventFilter, new BaseEventBotAction(ctx) {
@@ -155,7 +159,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
                     // Open Connection to atom
                     String targetUri = amw.getDefaultSocket().orElse(null);
                     bus.publish(new ConnectCommandEvent(
-                            receiverAtomSocketUri,
+                            botContextWrapper.getServiceAtomUri(),
                             URI.create(targetUri),
                             "You need to manage some group activity?"
                     ));
