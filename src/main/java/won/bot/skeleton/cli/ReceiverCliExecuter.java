@@ -65,6 +65,7 @@ public class ReceiverCliExecuter {
         }
 
         sportPlaces.forEach(place -> {
+            sb.append("  - ");
             sb.append(place.toString());
             sb.append("\n");
         });
@@ -75,7 +76,7 @@ public class ReceiverCliExecuter {
     public void listAllGroups(@Meta MessageFromOtherAtomEvent event) {
         StringBuilder sb = new StringBuilder();
         ((SkeletonBotContextWrapper) this.ctx.getBotContextWrapper()).getAllGroups()
-                .forEach(g -> sb.append(g.getName() + "\n"));
+                .forEach(g -> sb.append("  - " + g.getName() + "\n"));
         bus.publish(new ConnectionMessageCommandEvent(event.getCon(), sb.toString()));
     }
 

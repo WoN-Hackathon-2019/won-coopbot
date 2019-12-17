@@ -101,7 +101,7 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
                 .filter(m -> event.getConnectionURI().equals(m.getConnectionUri()))
                 .findFirst().orElseGet(null);
         if (member != null) {
-            sendAll(member.getName() + ": " + msg, event.getAtomURI(), event.getConnectionURI());
+            sendAll("**" + member.getName() + ":** " + msg, event.getAtomURI(), event.getConnectionURI());
         }
     }
 

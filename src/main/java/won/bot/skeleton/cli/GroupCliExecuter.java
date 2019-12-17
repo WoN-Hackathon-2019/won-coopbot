@@ -1,9 +1,6 @@
 package won.bot.skeleton.cli;
 
-import at.apf.easycli.annotation.Command;
-import at.apf.easycli.annotation.DefaultValue;
-import at.apf.easycli.annotation.Meta;
-import at.apf.easycli.annotation.Usage;
+import at.apf.easycli.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
@@ -70,7 +67,16 @@ public class GroupCliExecuter {
     }
 
     @Command("/list")
-    public void listGroupMembers(@Meta MessageFromOtherAtomEvent event) {
+    @Usage("\\[-l\\]")
+    public void listGroupMembers(
+            @Flag (value = 'l', alternative = "location") boolean withLocations,
+            @Meta MessageFromOtherAtomEvent event
+    ) {
+        if (withLocations) {
+            listWithLocations(event);
+            return;
+        }
+
         List<GroupMember> groupMembers = wrapper.getGroupMembers(event.getAtomURI());
 
         URI adminConnectionUri = wrapper.getGroup(event.getAtomURI()).getAdminConnectionUri();
@@ -86,7 +92,7 @@ public class GroupCliExecuter {
         bus.publish(new ConnectionMessageCommandEvent(event.getCon(), builder.toString()));
     }
 
-    @Command("/listWithLocation")
+    //@Command("/listWithLocation")
     public void listWithLocations(@Meta MessageFromOtherAtomEvent event) {
         List<GroupMember> groupMembers = wrapper.getGroupMembers(event.getAtomURI());
 
@@ -95,6 +101,7 @@ public class GroupCliExecuter {
         StringBuilder builder = new StringBuilder("Groupmembers:");
         for (GroupMember member : groupMembers) {
             builder.append("\n");
+            builder.append("  - ");
             builder.append(member.getName());
             if (member.getLocation() != null) {
                 builder.append("{ lat: ");
@@ -156,6 +163,7 @@ public class GroupCliExecuter {
         List<SportPlace> suggestedPlaces = new PlaceRankingService().getSuggestedPlaces(personLocations, wrapper.loadSportplaces().stream().collect(Collectors.toList()), number);
         StringBuilder sb = new StringBuilder();
         suggestedPlaces.forEach(place -> {
+            sb.append("  - ");
             sb.append(place.toString());
             sb.append("\n");
         });
