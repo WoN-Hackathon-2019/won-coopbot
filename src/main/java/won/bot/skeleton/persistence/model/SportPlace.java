@@ -66,4 +66,16 @@ public class SportPlace implements Serializable {
     public void setWeblink(String weblink) {
         this.weblink = weblink;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        getCategory().forEach(cat -> {
+            sb.append(cat);
+            sb.append(", ");
+        });
+
+        String output = sb.toString().substring(0, sb.toString().length() - 2);
+        return address + " (Category: " + output + ")";
+    }
 }

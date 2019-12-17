@@ -64,10 +64,8 @@ public class ReceiverCliExecuter {
         }
 
         sportPlaces.forEach(place -> {
-            sb.append(place.getAddress());
-            sb.append(" (Category: ");
-            place.getCategory().forEach(cat -> sb.append(cat));
-            sb.append(")\n");
+            sb.append(place.toString());
+            sb.append("\n");
         });
         bus.publish(new ConnectionMessageCommandEvent(event.getCon(), sb.toString()));
     }
@@ -99,7 +97,7 @@ public class ReceiverCliExecuter {
 
         List<Group> groups = wrapper.getAllGroups();
         Optional<Group> group = groups.stream()
-                .filter(g -> g.getName().equals(groupName +" GroupChannel"))
+                .filter(g -> g.getName().equals(groupName + " GroupChannel"))
                 .findFirst();
 
         if (!group.isPresent()) {

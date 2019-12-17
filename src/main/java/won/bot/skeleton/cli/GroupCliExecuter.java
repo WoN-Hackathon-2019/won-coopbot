@@ -1,8 +1,10 @@
 package won.bot.skeleton.cli;
 
 import at.apf.easycli.annotation.Command;
+import at.apf.easycli.annotation.DefaultValue;
 import at.apf.easycli.annotation.Meta;
 import at.apf.easycli.annotation.Usage;
+import org.springframework.beans.factory.annotation.Autowired;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.action.BaseEventBotAction;
 import won.bot.framework.eventbot.action.EventBotActionUtils;
@@ -18,11 +20,16 @@ import won.bot.framework.eventbot.listener.EventListener;
 import won.bot.framework.eventbot.listener.impl.ActionOnFirstEventListener;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.model.GroupMember;
+import won.bot.skeleton.persistence.model.Location;
+import won.bot.skeleton.persistence.model.SportPlace;
+import won.bot.skeleton.service.PlaceRankingService;
 import won.protocol.model.Connection;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GroupCliExecuter {
 
@@ -61,7 +68,7 @@ public class GroupCliExecuter {
         URI adminConnectionUri = wrapper.getGroup(event.getAtomURI()).getAdminConnectionUri();
 
         StringBuilder builder = new StringBuilder("Groupmembers:");
-        for (GroupMember member: groupMembers) {
+        for (GroupMember member : groupMembers) {
             builder.append("\n");
             builder.append(member.getName());
             if (member.getConnectionUri().equals(adminConnectionUri)) {
@@ -106,7 +113,29 @@ public class GroupCliExecuter {
         }));
         bus.publish(closeCommandEvent);
 
-     }
+    }
+
+    @Command("/findNearestPlaces")
+    @Usage("[number]")
+    public void findNearestPlaces(@DefaultValue("1") int number, @Meta MessageFromOtherAtomEvent event) {
+        List<Location> personLocations = new ArrayList<>();
+        personLocations.add(new Location(47.414601, 9.729089));
+        personLocations.add(new Location(47.552521, 9.751902));
+        personLocations.add(new Location(47.466603, 9.758670));
+        personLocations.add(new Location(47.419463, 9.663820));
+        personLocations.add(new Location(48.202232, 16.332563));
+        personLocations.add(new Location(48.189397, 16.332365));
+
+
+        List<SportPlace> suggestedPlaces = new PlaceRankingService().getSuggestedPlaces(personLocations, wrapper.loadSportplaces().stream().collect(Collectors.toList()), number);
+        StringBuilder sb = new StringBuilder();
+        suggestedPlaces.forEach(place -> {
+            sb.append(place.toString());
+            sb.append("\n");
+        });
+        bus.publish(new ConnectionMessageCommandEvent(event.getCon(), sb.toString()));
+    }
+
 
     private void sendBroadcastMessage(String msg, URI atomUri, URI senderConUri) {
         wrapper.getGroupMembers(atomUri).stream()
@@ -116,7 +145,4 @@ public class GroupCliExecuter {
                 .map(con -> con.get())
                 .forEach(con -> bus.publish(new ConnectionMessageCommandEvent(con, msg)));
     }
-
-
-
 }
