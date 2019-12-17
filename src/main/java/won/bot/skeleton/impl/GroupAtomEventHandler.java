@@ -18,10 +18,14 @@ import won.bot.skeleton.cli.GroupCliExecuter;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.model.Group;
 import won.bot.skeleton.model.GroupMember;
+import won.bot.skeleton.service.AtomLocationService;
+import won.protocol.model.Connection;
+import won.protocol.util.RdfUtils;
 import won.protocol.util.WonRdfUtils;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
 
 import java.net.URI;
+import java.util.Optional;
 
 public class GroupAtomEventHandler implements AtomMessageEventHandler {
 
@@ -29,6 +33,7 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
     private EventListenerContext ctx;
     private EventBus bus;
     private CliEngine cliEngine;
+    private AtomLocationService als;
 
     public GroupAtomEventHandler(SkeletonBotContextWrapper botContextWrapper, EventListenerContext ctx, EventBus bus) {
         this.botContextWrapper = botContextWrapper;
@@ -36,6 +41,7 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
         this.bus = bus;
         this.cliEngine = new EasyEngine();
         this.cliEngine.register(new GroupCliExecuter(ctx, bus));
+        this.als = new AtomLocationService(ctx);
     }
 
     @Override
