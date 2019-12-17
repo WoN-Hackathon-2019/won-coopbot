@@ -105,7 +105,7 @@ public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
                     List<Coordinate> locations = new AtomLocationService(ctx).getGroupMemberLocations(groupAtomUri);
                     StringBuilder sb = new StringBuilder();
                     if (locations.isEmpty()) {
-                        sb.append("/json \"{\\\"locations\\\"[ 47.414601, 9.729089],\\\"categories\\\": [\\\"Socker Field\\\", \\\"Socker Stadium\\\"]}\"");
+                        sb.append("/json \"{\\\"locations\\\"[ 47.414601, 9.729089],\\\"categories\\\": [\\\"Soccer Field\\\", \\\"Soccer Stadium\\\"]}\"");
                     } else {
 
                         sb.append("/json \"");
@@ -117,7 +117,7 @@ public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
                             }
                         }
                         sb.append("],");
-                        sb.append("\\\"categories\\\": [\\\"Socker Field\\\", \\\"Socker Stadium\\\"]}");
+                        sb.append("\\\"categories\\\": [\\\"Soccer Field\\\", \\\"Soccer Stadium\\\"]}");
                         sb.append("\"");
                     }
 
