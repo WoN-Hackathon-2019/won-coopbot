@@ -78,6 +78,27 @@ public class GroupCliExecuter {
         bus.publish(new ConnectionMessageCommandEvent(event.getCon(), builder.toString()));
     }
 
+    @Command("/listWithLocation")
+    public void listWithLocations(@Meta MessageFromOtherAtomEvent event) {
+        List<GroupMember> groupMembers = wrapper.getGroupMembers(event.getAtomURI());
+
+        URI adminConnectionUri = wrapper.getGroup(event.getAtomURI()).getAdminConnectionUri();
+
+        StringBuilder builder = new StringBuilder("Groupmembers:");
+        for (GroupMember member: groupMembers) {
+            builder.append("\n");
+            builder.append(member.getName());
+            if (member.getLocation() != null) {
+                builder.append("{ lat: ");
+                builder.append(member.getLocation().getLatitude());
+                builder.append(", lng: ");
+                builder.append(member.getLocation().getLongitude());
+                builder.append("}");
+            }
+        }
+        bus.publish(new ConnectionMessageCommandEvent(event.getCon(), builder.toString()));
+    }
+
     @Command("/remove")
     @Usage("name")
     public void removeMember(String name, @Meta MessageFromOtherAtomEvent event) {
