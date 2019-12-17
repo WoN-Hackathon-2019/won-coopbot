@@ -4,6 +4,7 @@ import at.apf.easycli.annotation.Command;
 import at.apf.easycli.annotation.DefaultValue;
 import at.apf.easycli.annotation.Meta;
 import at.apf.easycli.annotation.Usage;
+
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.bus.EventBus;
 import won.bot.framework.eventbot.event.impl.command.connectionmessage.ConnectionMessageCommandEvent;
@@ -14,6 +15,8 @@ import won.bot.skeleton.impl.SkeletonBot;
 import won.bot.skeleton.persistence.model.SportPlace;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import won.bot.skeleton.service.AtomLocationService;
 import won.protocol.model.Coordinate;
 
@@ -35,14 +38,32 @@ public class ReceiverCliExecuter {
         bus.publish(new CreateGroupChatEvent(name, event.getTargetSocketURI(), capacity));
     }
 
-    @Command("/plays")
-    public void loadSportplaces() {
-        System.out.println( ((SkeletonBotContextWrapper) this.ctx.getBotContextWrapper()).loadSportplaces());
+    @Command("/place")
+    @Usage("\\[outdoor|indoor\\]")
+    public void loadSportplaces(@DefaultValue("bla") String outOrIndoor, @Meta MessageFromOtherAtomEvent event) {
+        StringBuilder sb = new StringBuilder();
+
+        Set<SportPlace> sportPlaces = ((SkeletonBotContextWrapper) this.ctx.getBotContextWrapper()).loadSportplaces();
+
+        if ("outdoor".equals(outOrIndoor)) {
+            sportPlaces = sportPlaces.stream().filter(SportPlace::isOutdoor).collect(Collectors.toSet());
+        } else if ("indoor".equals(outOrIndoor)) {
+            sportPlaces = sportPlaces.stream().filter(place -> !place.isOutdoor()).collect(Collectors.toSet());
+        }
+
+        sportPlaces.stream().forEach(place -> {
+            sb.append(place.getAddress());
+            sb.append(" (Category: ");
+            place.getCategory().forEach(cat -> sb.append(cat));
+            sb.append(")\n");
+        });
+        bus.publish(new ConnectionMessageCommandEvent(event.getCon(), sb.toString()));
     }
+
     @Command("/list")
     public void listAllGroups(@Meta MessageFromOtherAtomEvent event) {
         StringBuilder sb = new StringBuilder();
-        ((SkeletonBotContextWrapper) this.ctx.getBotContextWrapper()).getAllGroups().stream()
+        ((SkeletonBotContextWrapper) this.ctx.getBotContextWrapper()).getAllGroups()
                 .forEach(g -> sb.append(g.getName() + "\n"));
         bus.publish(new ConnectionMessageCommandEvent(event.getCon(), sb.toString()));
     }

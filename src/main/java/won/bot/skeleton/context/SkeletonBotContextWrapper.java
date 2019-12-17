@@ -28,10 +28,10 @@ public class SkeletonBotContextWrapper extends ServiceAtomEnabledBotContextWrapp
         Map<String, List<Object>> connectedSockets = getBotContext().loadListMap(connectedSocketsMap);
         Map<URI, Set<URI>> connectedSocketsMapSet = new HashMap<>(connectedSockets.size());
 
-        for(Map.Entry<String, List<Object>> entry : connectedSockets.entrySet()) {
+        for (Map.Entry<String, List<Object>> entry : connectedSockets.entrySet()) {
             URI senderSocket = URI.create(entry.getKey());
             Set<URI> targetSocketsSet = new HashSet<>(entry.getValue().size());
-            for(Object o : entry.getValue()) {
+            for (Object o : entry.getValue()) {
                 targetSocketsSet.add((URI) o);
             }
             connectedSocketsMapSet.put(senderSocket, targetSocketsSet);
@@ -78,13 +78,13 @@ public class SkeletonBotContextWrapper extends ServiceAtomEnabledBotContextWrapp
             return Collections.EMPTY_LIST;
         }
         return members.stream()
-                .map(m -> (GroupMember)m)
+                .map(m -> (GroupMember) m)
                 .collect(Collectors.toList());
     }
 
     public void removeGroupMember(URI atomUri, URI connectionUri) {
         GroupMember member = (GroupMember) getBotContext().loadListMap(groupMemberMap).get(atomUri.toString()).stream()
-                .filter(m -> ((GroupMember)m).getConnectionUri().equals(connectionUri))
+                .filter(m -> ((GroupMember) m).getConnectionUri().equals(connectionUri))
                 .findFirst().orElseGet(null);
         getBotContext().removeFromListMap(groupMemberMap, atomUri.toString(), member);
     }
@@ -95,9 +95,9 @@ public class SkeletonBotContextWrapper extends ServiceAtomEnabledBotContextWrapp
 
     public Set<SportPlace> loadSportplaces() {
         Map<String, List<Object>> stringListMap = getBotContext().loadListMap(sportPlace);
-       LinkedList places =  (LinkedList) stringListMap.get("places");
+        LinkedList places = (LinkedList) stringListMap.get("places");
 
-       Object[] sportplaces = (Object []) places.getFirst();
-       return       Arrays.stream(sportplaces).map(sp -> (SportPlace) sp).collect(Collectors.toSet());
-   }
+        Object[] sportplaces = (Object[]) places.getFirst();
+        return Arrays.stream(sportplaces).map(sp -> (SportPlace) sp).collect(Collectors.toSet());
+    }
 }
