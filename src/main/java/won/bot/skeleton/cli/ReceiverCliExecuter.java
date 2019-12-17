@@ -39,6 +39,14 @@ public class ReceiverCliExecuter {
     public void loadSportplaces() {
         System.out.println( ((SkeletonBotContextWrapper) this.ctx.getBotContextWrapper()).loadSportplaces());
     }
+    @Command("/list")
+    public void listAllGroups(@Meta MessageFromOtherAtomEvent event) {
+        StringBuilder sb = new StringBuilder();
+        ((SkeletonBotContextWrapper) this.ctx.getBotContextWrapper()).getAllGroups().stream()
+                .forEach(g -> sb.append(g.getName() + "\n"));
+        bus.publish(new ConnectionMessageCommandEvent(event.getCon(), sb.toString()));
+    }
+
 
     @Command("/myloc")
     public void getLocationOfAtom(@Meta MessageFromOtherAtomEvent event) {

@@ -53,6 +53,12 @@ public class SkeletonBotContextWrapper extends ServiceAtomEnabledBotContextWrapp
         getBotContext().addToListMap(groupMap, atomUri.toString(), group);
     }
 
+    public List<Group> getAllGroups() {
+        return getBotContext().loadListMap(groupMap).values().stream()
+                .map(list -> (Group) list.get(0))
+                .collect(Collectors.toList());
+    }
+
     public Group getGroup(URI atomUri) {
         return (Group) getBotContext().loadListMap(groupMap).get(atomUri.toString()).get(0);
     }
