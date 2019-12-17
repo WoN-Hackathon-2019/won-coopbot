@@ -58,7 +58,8 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
         }
 
         String name = WonRdfUtils.MessageUtils.getTextMessage(event.getWonMessage());
-        botContextWrapper.addGroupMember(event.getAtomURI(), new GroupMember(name, event.getConnectionURI()));
+        GroupMember member = new GroupMember(name, event.getConnectionURI());
+        botContextWrapper.addGroupMember(event.getAtomURI(), member);
         String message = "Hello " + name + ". You joined the groupchat.";
         final ConnectCommandEvent connectCommandEvent = new ConnectCommandEvent(
                 event.getRecipientSocket(),
@@ -72,6 +73,8 @@ public class GroupAtomEventHandler implements AtomMessageEventHandler {
         if (loc == null) {
             /* ask for location */
             bus.publish(new ConnectionMessageCommandEvent(event.getCon(), "Your location has not been found. Using default location! To specify your location use \"/setLocation\" with your location attached"));
+        } else {
+            member.setLocation(loc);
         }
     }
 
