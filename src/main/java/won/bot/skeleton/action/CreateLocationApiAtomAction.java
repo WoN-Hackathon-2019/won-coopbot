@@ -1,5 +1,6 @@
 package won.bot.skeleton.action;
 
+import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Resource;
@@ -15,19 +16,26 @@ import won.bot.framework.eventbot.bus.EventBus;
 import won.bot.framework.eventbot.event.Event;
 import won.bot.framework.eventbot.event.impl.atomlifecycle.AtomCreatedEvent;
 import won.bot.framework.eventbot.event.impl.command.connect.ConnectCommandEvent;
+import won.bot.framework.eventbot.event.impl.command.connectionmessage.ConnectionMessageCommandEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.ConnectFromOtherAtomEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.FailureResponseEvent;
+import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
 import won.bot.framework.eventbot.filter.EventFilter;
 import won.bot.framework.eventbot.listener.EventListener;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.event.CreateGroupChatEvent;
+import won.bot.skeleton.event.CreateLocationApiAtomEvent;
 import won.bot.skeleton.model.Group;
+import won.bot.skeleton.model.dto.LocationApiResponse;
+import won.bot.skeleton.service.AtomLocationService;
 import won.protocol.message.WonMessage;
+import won.protocol.model.Coordinate;
 import won.protocol.service.WonNodeInformationService;
 import won.protocol.util.AtomModelWrapper;
 import won.protocol.util.DefaultAtomModelWrapper;
 import won.protocol.util.RdfUtils;
 import won.protocol.util.WonRdfUtils;
+import won.protocol.util.linkeddata.WonLinkedDataUtils;
 import won.protocol.vocabulary.SCHEMA;
 import won.protocol.vocabulary.WONCON;
 import won.protocol.vocabulary.WONMATCH;
@@ -35,6 +43,7 @@ import won.protocol.vocabulary.WXCHAT;
 
 import java.net.URI;
 import java.util.Date;
+import java.util.List;
 
 public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
 
@@ -50,6 +59,7 @@ public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
         EventListenerContext ctx = getEventListenerContext();
         SkeletonBotContextWrapper botContextWrapper = (SkeletonBotContextWrapper) ctx.getBotContextWrapper();
 
+        final URI groupAtomUri = ((CreateLocationApiAtomEvent)event).getGroupAtomUri();
         final URI wonNodeUri = ctx.getNodeURISource().getNodeURI();
         WonNodeInformationService wonNodeInformationService = ctx.getWonNodeInformationService();
         final URI atomURI = wonNodeInformationService.generateAtomURI(wonNodeUri);
@@ -65,6 +75,7 @@ public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
         EventBus bus = ctx.getEventBus();
         EventListener successCallback = succEvent -> {
 
+            // Register the connect from the api
             bus.subscribe(ConnectFromOtherAtomEvent.class, event1 -> {
                 if (event1 instanceof ConnectFromOtherAtomEvent) {
                     ConnectFromOtherAtomEvent e = (ConnectFromOtherAtomEvent) event1;
@@ -76,9 +87,52 @@ public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
                 @Override
                 protected void doRun(Event event, EventListener executingListener) throws Exception {
                     // TODO: Send request and waint for response
+                    List<Coordinate> locations = new AtomLocationService(ctx).getGroupLocations(groupAtomUri);
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("/json ");
+                    sb.append("{\\\"locations\\\": [");
+                    for (int i = 0; i < locations.size(); i++) {
+                        sb.append("[" + locations.get(i).getLatitude() + ", " + locations.get(i).getLongitude() + "]");
+                        if (i + 1 < locations.size()) {
+                            sb.append(", ");
+                        }
+                    }
+                    sb.append("],");
+                    sb.append("\\\"categories\\\": [\\\"Socker Field\\\", \\\"Socker Stadium\\\"]}");
+
+                    ConnectFromOtherAtomEvent connectFromOtherAtomEvent = (ConnectFromOtherAtomEvent) event;
+
+                    bus.publish(new ConnectionMessageCommandEvent(connectFromOtherAtomEvent.getCon(), sb.toString()));
+                }
+            });
+
+
+            // Register the response from the api
+            bus.subscribe(MessageFromOtherAtomEvent.class, event1 -> {
+                if (event1 instanceof MessageFromOtherAtomEvent) {
+                    MessageFromOtherAtomEvent e = (MessageFromOtherAtomEvent) event1;
+                    return e.getAtomURI().equals(atomURI);
+                }
+                return false;
+            }, new BaseEventBotAction(ctx) {
+
+                @Override
+                protected void doRun(Event event, EventListener executingListener) throws Exception {
+                    // TODO: Read resonse and forward it
+                    MessageFromOtherAtomEvent messageFromOtherAtomEvent = (MessageFromOtherAtomEvent) event;
+                    String responseText = WonRdfUtils.MessageUtils.getTextMessage(messageFromOtherAtomEvent.getWonMessage());
+                    Gson gson = new Gson();
+                    LocationApiResponse locationApiResponse = gson.fromJson(responseText, LocationApiResponse.class);
+
+                    botContextWrapper.getGroupMembers(groupAtomUri).stream()
+                            .map(m -> WonLinkedDataUtils.getConnectionForConnectionURI(m.getConnectionUri(), ctx.getLinkedDataSource()))
+                            .filter(con -> con.isPresent())
+                            .map(con -> con.get())
+                            .forEach(con -> bus.publish(new ConnectionMessageCommandEvent(con, "Best location: " + locationApiResponse.getMapsLink())));
 
                 }
             });
+
 
         };
         EventListener failureCallback = failEvent -> {
