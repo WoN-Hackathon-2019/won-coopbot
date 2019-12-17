@@ -41,7 +41,7 @@ public class ReceiverAtomEventHandler implements AtomMessageEventHandler {
 
     @Override
     public void onConnect(ConnectFromOtherAtomEvent event) {
-        String message = "Hello i am the BotSkeletor i will send you a message everytime an atom is created...";
+        String message = "Hello i am the CoopBot. You can create use the following commands:\n" + cliEngine.listCommands();
         final ConnectCommandEvent connectCommandEvent = new ConnectCommandEvent(
                 event.getRecipientSocket(),
                 event.getSenderSocket(), message);
