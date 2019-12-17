@@ -8,7 +8,7 @@ import java.util.List;
 
 public class SportPlace implements Serializable {
 
-    private String id;
+    private Long id;
     private Location location;
     private String address;
     private boolean outdoor;
@@ -19,11 +19,11 @@ public class SportPlace implements Serializable {
         this.category = new ArrayList<>();
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

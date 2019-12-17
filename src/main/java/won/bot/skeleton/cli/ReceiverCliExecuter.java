@@ -1,9 +1,6 @@
 package won.bot.skeleton.cli;
 
-import at.apf.easycli.annotation.Command;
-import at.apf.easycli.annotation.DefaultValue;
-import at.apf.easycli.annotation.Meta;
-import at.apf.easycli.annotation.Usage;
+import at.apf.easycli.annotation.*;
 
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.bus.EventBus;
@@ -39,19 +36,19 @@ public class ReceiverCliExecuter {
     }
 
     @Command("/place")
-    @Usage("\\[outdoor|indoor\\]")
-    public void loadSportplaces(@DefaultValue("bla") String outOrIndoor, @Meta MessageFromOtherAtomEvent event) {
+    @Usage("\\[-o\\]\\[-i\\]")
+    public void loadSportplaces(@Flag('o') boolean outdoor, @Flag('i') boolean indoor, @Meta MessageFromOtherAtomEvent event) {
         StringBuilder sb = new StringBuilder();
 
         Set<SportPlace> sportPlaces = ((SkeletonBotContextWrapper) this.ctx.getBotContextWrapper()).loadSportplaces();
 
-        if ("outdoor".equals(outOrIndoor)) {
+        if (outdoor && !indoor) {
             sportPlaces = sportPlaces.stream().filter(SportPlace::isOutdoor).collect(Collectors.toSet());
-        } else if ("indoor".equals(outOrIndoor)) {
+        } else if (indoor && !outdoor) {
             sportPlaces = sportPlaces.stream().filter(place -> !place.isOutdoor()).collect(Collectors.toSet());
         }
 
-        sportPlaces.stream().forEach(place -> {
+        sportPlaces.forEach(place -> {
             sb.append(place.getAddress());
             sb.append(" (Category: ");
             place.getCategory().forEach(cat -> sb.append(cat));
