@@ -1,5 +1,6 @@
 package won.bot.skeleton;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 
 import won.bot.framework.bot.utils.BotUtils;
+import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.persistence.JsonParser;
 
 @SpringBootConfiguration
@@ -29,10 +31,10 @@ public class SkeletonBotApp {
 		// app.exit(applicationContext);
 	}
 	
-	@Bean
-	public CommandLineRunner loadJsonData(@Value("${json.sportplace.import.url}") String url) {
+	/*@Bean
+	public CommandLineRunner loadJsonData(@Value("${json.sportplace.import.url}") String url, SkeletonBotContextWrapper skeletonBotContextWrapper) {
 		return args -> {
-			new JsonParser(url).parseData();
+			skeletonBotContextWrapper.addSportplaces(new JsonParser(url).parseData());
 		};
-	}
+	}*/
 }

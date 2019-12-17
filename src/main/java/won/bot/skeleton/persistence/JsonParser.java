@@ -24,81 +24,80 @@ import won.bot.skeleton.persistence.model.Location;
 import won.bot.skeleton.persistence.model.SportPlace;
 
 /**
- * 
  * @author reini
- *
  */
 public class JsonParser {
 
-	private String url;
+    private String url;
 
-	public JsonParser(String url) {
-		this.url = url;
-	}
+    public JsonParser(String url) {
+        this.url = url;
+    }
 
-	public Set<SportPlace> parseData() {
-		Set<SportPlace> sportPlaces = new HashSet<SportPlace>();
+    public Set<SportPlace> parseData() {
+        Set<SportPlace> sportPlaces = new HashSet<>();
 
-		try {
-			JSONObject jsonObject = downloadFromUrl();
-			JSONArray features = (JSONArray) jsonObject.get("features");
-			Iterator<?> iterator = features.iterator();
+        try {
+            JSONObject jsonObject = downloadFromUrl();
+            JSONArray features = (JSONArray) jsonObject.get("features");
+            Iterator<?> iterator = features.iterator();
 
-			while (iterator.hasNext()) {
-				JSONObject element = (JSONObject) iterator.next();
-				SportPlace sportPlace = new SportPlace();
+            while (iterator.hasNext()) {
+                JSONObject element = (JSONObject) iterator.next();
+                SportPlace sportPlace = new SportPlace();
 
-				sportPlace.setLocation(extractLocation(element));
+                sportPlace.setLocation(extractLocation(element));
 
-				@SuppressWarnings("unchecked")
-				Map propertyMap = (HashMap<String, ?>) element.get("properties");
-				String category = (String) propertyMap.get("KATEGORIE_TXT");
+                @SuppressWarnings("unchecked")
+                Map propertyMap = (HashMap<String, ?>) element.get("properties");
+                String category = (String) propertyMap.get("KATEGORIE_TXT");
 
-				if (!category.contains("Öffentlich")) {
-					continue;
-				}
-				sportPlace.setOutdoor(category.contains("outdoor"));
-				sportPlace.setWeblink((String) propertyMap.get("WEBLINK1"));
-				sportPlace.setAddress((String) propertyMap.get("ADRESSE"));
-				sportPlace.getCategory().addAll(extractArten(propertyMap));
+                if (!category.toLowerCase().contains("Öffentlich".toLowerCase())) {
+                    continue;
+                }
+                sportPlace.setId((Long) propertyMap.get("OBJECTID"));
+                sportPlace.setOutdoor(category.toLowerCase().contains("outdoor".toLowerCase()));
+                sportPlace.setWeblink((String) propertyMap.get("WEBLINK1"));
+                sportPlace.setAddress((String) propertyMap.get("ADRESSE"));
+                sportPlace.getCategory().addAll(extractArten(propertyMap));
 
-				sportPlaces.add(sportPlace);
-			}
+                sportPlaces.add(sportPlace);
+            }
 
-		} catch (IOException | ParseException e) {
-			e.printStackTrace();
-		}
-		return sportPlaces;
-	}
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+        return sportPlaces;
+    }
 
-	private Collection<? extends String> extractArten(Map propertyMap) {
-		String art = (String) propertyMap.get("SPORTSTAETTEN_ART");
-		art = Jsoup.clean(art, Whitelist.none());
-		art = art.replaceAll("\\s+", " ");
-		return Arrays.asList(art.split(","));
-	}
+    private Collection<? extends String> extractArten(Map propertyMap) {
+        String art = (String) propertyMap.get("SPORTSTAETTEN_ART");
+        art = Jsoup.clean(art, Whitelist.none());
+        art = art.replaceAll("\\s+", " ");
+        return Arrays.asList(art.split(","));
+    }
 
-	private Location extractLocation(JSONObject element) {
-		@SuppressWarnings("unchecked")
-		Map geoMap = (HashMap<String, ?>) element.get("geometry");
-		JSONArray coord = (JSONArray) geoMap.get("coordinates");
+    private Location extractLocation(JSONObject element) {
+        @SuppressWarnings("unchecked")
+        Map geoMap = (HashMap<String, ?>) element.get("geometry");
+        JSONArray coord = (JSONArray) geoMap.get("coordinates");
 
-		Location location = new Location((double) coord.get(0), (double) coord.get(1));
-		return location;
-	}
+        Location location = new Location((double) coord.get(0), (double) coord.get(1));
+        return location;
+    }
 
-	private JSONObject downloadFromUrl() throws MalformedURLException, IOException, ParseException {
-		JSONParser parser = new JSONParser();
-		URL dataToParse = new URL(url);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(dataToParse.openStream()));
-		StringBuffer buffer = new StringBuffer();
-		int read;
-		char[] chars = new char[1024];
-		while ((read = reader.read(chars)) != -1) {
-			buffer.append(chars, 0, read);
-		}
+    private JSONObject downloadFromUrl() throws MalformedURLException, IOException, ParseException {
+        JSONParser parser = new JSONParser();
+        URL dataToParse = new URL(url);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(dataToParse.openStream()));
+        StringBuffer buffer = new StringBuffer();
+        int read;
+        char[] chars = new char[1024];
+        while ((read = reader.read(chars)) != -1) {
+            buffer.append(chars, 0, read);
+        }
 
-		JSONObject jsonObject = (JSONObject) parser.parse(buffer.toString());
-		return jsonObject;
-	}
+        JSONObject jsonObject = (JSONObject) parser.parse(buffer.toString());
+        return jsonObject;
+    }
 }

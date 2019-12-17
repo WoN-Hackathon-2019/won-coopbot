@@ -8,11 +8,13 @@ public class Group implements Serializable {
     private String name;
     private int capacity;
     private URI adminConnectionUri;
+    private URI groupAtomUri;
 
 
-    public Group(String name, int capacity) {
+    public Group(String name, int capacity, URI groupAtomUri) {
         this.name = name;
         this.capacity = capacity;
+        this.groupAtomUri = groupAtomUri;
     }
 
     public String getName() {
@@ -29,5 +31,13 @@ public class Group implements Serializable {
 
     public void setAdminConnectionUri(URI adminConnectionUri) {
         this.adminConnectionUri = adminConnectionUri;
+    }
+
+    public URI getGroupAtomUri() {
+        return groupAtomUri;
+    }
+
+    public void setGroupAtomUri(URI groupAtomUri) {
+        this.groupAtomUri = groupAtomUri;
     }
 }

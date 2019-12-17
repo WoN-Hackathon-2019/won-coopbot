@@ -7,6 +7,8 @@ import org.apache.jena.query.Dataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import won.bot.framework.bot.base.EventBot;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.action.BaseEventBotAction;
@@ -26,10 +28,12 @@ import won.bot.framework.extensions.matcher.MatcherExtension;
 import won.bot.framework.extensions.matcher.MatcherExtensionAtomCreatedEvent;
 import won.bot.framework.extensions.serviceatom.ServiceAtomBehaviour;
 import won.bot.framework.extensions.serviceatom.ServiceAtomExtension;
+
 import won.bot.skeleton.action.CreateGroupChatAtomAction;
 import won.bot.skeleton.action.CreateLocationApiAtomAction;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 import won.bot.skeleton.event.CreateGroupChatEvent;
+import won.bot.skeleton.persistence.JsonParser;
 import won.bot.skeleton.event.CreateLocationApiAtomEvent;
 import won.protocol.model.Coordinate;
 import won.protocol.util.DefaultAtomModelWrapper;
@@ -44,6 +48,10 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
     private AtomMessageEventHandler messageBroker;
     private URI receiverAtomUri;
     private URI receiverAtomSocketUri;
+
+    @Autowired
+    @Value("${json.sportplace.import.url}")
+    private String url;
 
     // bean setter, used by spring
     public void setRegistrationMatcherRetryInterval(final int registrationMatcherRetryInterval) {
@@ -70,6 +78,8 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
         }
         EventBus bus = getEventBus();
         SkeletonBotContextWrapper botContextWrapper = (SkeletonBotContextWrapper) getBotContextWrapper();
+
+        botContextWrapper.addSportplaces(new JsonParser(url).parseData());
 
         // register listeners for event.impl.command events used to tell the bot to send
         // messages
@@ -154,7 +164,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
                 Dataset atomData = WonLinkedDataUtils.getFullAtomDataset(e.getAtomURI(), getEventListenerContext().getLinkedDataSource());
                 final DefaultAtomModelWrapper amw = new DefaultAtomModelWrapper(atomData);
                 Coordinate latlang = amw.getLocationCoordinate();
-                if (latlang != null /*&& amw.getAllTags().contains("groupactivity")*/) {
+                if (latlang != null && amw.getAllTags().contains("groupactivity")) {
                     logger.info("Found a new atom with a location. Trying to establish a connection ...");
                     // Open Connection to atom
                     String targetUri = amw.getDefaultSocket().orElse(null);

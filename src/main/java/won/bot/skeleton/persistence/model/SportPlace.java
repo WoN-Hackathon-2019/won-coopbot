@@ -2,14 +2,13 @@ package won.bot.skeleton.persistence.model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-public class SportPlace {
+public class SportPlace implements Serializable {
 
-    @GeneratedValue
-    private String id;
+    private Long id;
     private Location location;
     private String address;
     private boolean outdoor;
@@ -20,11 +19,11 @@ public class SportPlace {
         this.category = new ArrayList<>();
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
