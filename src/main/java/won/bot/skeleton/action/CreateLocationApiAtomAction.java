@@ -89,10 +89,10 @@ public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
                 @Override
                 protected void doRun(Event event, EventListener executingListener) throws Exception {
 
-                    /*if (sent) {
+                    if (sent) {
                         return;
                     }
-                    sent = true;*/
+                    sent = true;
 
                     // Send connect before sending api request
                     ConnectFromOtherAtomEvent connectFromOtherAtomEvent = (ConnectFromOtherAtomEvent) event;
