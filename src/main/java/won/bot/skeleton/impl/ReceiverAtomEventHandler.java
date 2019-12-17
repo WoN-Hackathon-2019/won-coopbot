@@ -78,6 +78,7 @@ public class ReceiverAtomEventHandler implements AtomMessageEventHandler {
                 cliEngine.parse(recMsg, event);
             } catch (Exception e) {
                 // TODO: Send usage
+                e.printStackTrace();
             }
             return;
         }
