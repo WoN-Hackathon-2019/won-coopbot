@@ -17,6 +17,7 @@ import won.bot.framework.eventbot.filter.impl.CommandResultFilter;
 import won.bot.framework.eventbot.listener.EventListener;
 import won.bot.framework.eventbot.listener.impl.ActionOnFirstEventListener;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
+import won.bot.skeleton.event.CreateLocationApiAtomEvent;
 import won.bot.skeleton.model.GroupMember;
 import won.protocol.model.Connection;
 import won.protocol.util.linkeddata.WonLinkedDataUtils;
@@ -107,6 +108,11 @@ public class GroupCliExecuter {
         bus.publish(closeCommandEvent);
 
      }
+
+    @Command("/meet")
+    public void asdf(@Meta MessageFromOtherAtomEvent event) {
+        bus.publish(new CreateLocationApiAtomEvent(event.getAtomURI()));
+    }
 
     private void sendBroadcastMessage(String msg, URI atomUri, URI senderConUri) {
         wrapper.getGroupMembers(atomUri).stream()

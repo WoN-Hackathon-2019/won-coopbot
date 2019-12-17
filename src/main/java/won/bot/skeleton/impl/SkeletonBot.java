@@ -154,12 +154,12 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
                 Dataset atomData = WonLinkedDataUtils.getFullAtomDataset(e.getAtomURI(), getEventListenerContext().getLinkedDataSource());
                 final DefaultAtomModelWrapper amw = new DefaultAtomModelWrapper(atomData);
                 Coordinate latlang = amw.getLocationCoordinate();
-                if (latlang != null && amw.getAllTags().contains("groupactivity")) {
+                if (latlang != null /*&& amw.getAllTags().contains("groupactivity")*/) {
                     logger.info("Found a new atom with a location. Trying to establish a connection ...");
                     // Open Connection to atom
                     String targetUri = amw.getDefaultSocket().orElse(null);
                     bus.publish(new ConnectCommandEvent(
-                            botContextWrapper.getServiceAtomUri(),
+                            receiverAtomSocketUri,
                             URI.create(targetUri),
                             "You need to manage some group activity?"
                     ));

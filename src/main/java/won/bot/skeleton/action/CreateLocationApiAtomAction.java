@@ -84,12 +84,27 @@ public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
                 return false;
             }, new BaseEventBotAction(ctx) {
 
+                private boolean sent = false;
+
                 @Override
                 protected void doRun(Event event, EventListener executingListener) throws Exception {
+
+                    /*if (sent) {
+                        return;
+                    }
+                    sent = true;*/
+
+                    // Send connect before sending api request
+                    ConnectFromOtherAtomEvent connectFromOtherAtomEvent = (ConnectFromOtherAtomEvent) event;
+                    bus.publish(new ConnectCommandEvent(connectFromOtherAtomEvent.getRecipientSocket(), connectFromOtherAtomEvent.getSenderSocket(), ""));
+                    //bus.publish(new ConnectionMessageCommandEvent(connectFromOtherAtomEvent.getCon(), ""));
+
+                    Thread.sleep(1000);
+
                     // TODO: Send request and waint for response
                     List<Coordinate> locations = new AtomLocationService(ctx).getGroupLocations(groupAtomUri);
                     StringBuilder sb = new StringBuilder();
-                    sb.append("/json ");
+                    sb.append("/json \"");
                     sb.append("{\\\"locations\\\": [");
                     for (int i = 0; i < locations.size(); i++) {
                         sb.append("[" + locations.get(i).getLatitude() + ", " + locations.get(i).getLongitude() + "]");
@@ -99,8 +114,9 @@ public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
                     }
                     sb.append("],");
                     sb.append("\\\"categories\\\": [\\\"Socker Field\\\", \\\"Socker Stadium\\\"]}");
+                    sb.append("\"");
 
-                    ConnectFromOtherAtomEvent connectFromOtherAtomEvent = (ConnectFromOtherAtomEvent) event;
+
 
                     bus.publish(new ConnectionMessageCommandEvent(connectFromOtherAtomEvent.getCon(), sb.toString()));
                 }
@@ -165,7 +181,7 @@ public class CreateLocationApiAtomAction extends AbstractCreateAtomAction {
         // s:name
         atom.addProperty(SCHEMA.NAME, "LocationApiRequest");
         // won:tags
-        String[] tags = { "locationapi" };
+        String[] tags = { "meetingapi" };
         for (String tag : tags) {
             atom.addProperty(WONCON.tag, tag);
         }
