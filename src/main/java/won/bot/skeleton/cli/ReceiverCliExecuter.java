@@ -80,17 +80,6 @@ public class ReceiverCliExecuter {
     }
 
 
-    @Command("/myloc")
-    public void getLocationOfAtom(@Meta MessageFromOtherAtomEvent event) {
-        Coordinate location = als.getAtomLocation(event.getTargetAtomURI());
-        if (location != null) {
-            bus.publish(new ConnectionMessageCommandEvent(event.getCon(), "Lon: " + location.getLongitude() + " / Lan: " + location.getLatitude()));
-        } else {
-            bus.publish(new ConnectionMessageCommandEvent(event.getCon(), "You don't have a location defined"));
-        }
-    }
-
-
     @Command("/join")
     @Usage("groupname")
     public void joinGroup(String groupName, @Meta MessageFromOtherAtomEvent event) {
