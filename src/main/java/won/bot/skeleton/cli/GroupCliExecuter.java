@@ -26,6 +26,7 @@ import won.bot.skeleton.event.CreateLocationApiAtomEvent;
 import won.bot.skeleton.model.GroupMember;
 import won.bot.skeleton.persistence.model.Location;
 import won.bot.skeleton.persistence.model.SportPlace;
+import won.bot.skeleton.service.AtomLocationService;
 import won.bot.skeleton.service.PlaceRankingService;
 import won.protocol.message.WonMessage;
 import won.protocol.model.Connection;
@@ -92,7 +93,7 @@ public class GroupCliExecuter {
         URI adminConnectionUri = wrapper.getGroup(event.getAtomURI()).getAdminConnectionUri();
 
         StringBuilder builder = new StringBuilder("Groupmembers:");
-        for (GroupMember member: groupMembers) {
+        for (GroupMember member : groupMembers) {
             builder.append("\n");
             builder.append(member.getName());
             if (member.getLocation() != null) {
@@ -147,13 +148,10 @@ public class GroupCliExecuter {
     @Usage("[number]")
     public void findNearestPlaces(@DefaultValue("1") int number, @Meta MessageFromOtherAtomEvent event) {
         List<Location> personLocations = new ArrayList<>();
-        personLocations.add(new Location(47.414601, 9.729089));
-        personLocations.add(new Location(47.552521, 9.751902));
-        personLocations.add(new Location(47.466603, 9.758670));
-        personLocations.add(new Location(47.419463, 9.663820));
-        personLocations.add(new Location(48.202232, 16.332563));
-        personLocations.add(new Location(48.189397, 16.332365));
 
+        AtomLocationService atomLocationService = new AtomLocationService(ctx);
+        List<Coordinate> groupMemberLocations = atomLocationService.getGroupMemberLocations(event.getAtomURI());
+        groupMemberLocations.forEach(loc -> personLocations.add(new Location(loc.getLatitude(), loc.getLongitude())));
 
         List<SportPlace> suggestedPlaces = new PlaceRankingService().getSuggestedPlaces(personLocations, wrapper.loadSportplaces().stream().collect(Collectors.toList()), number);
         StringBuilder sb = new StringBuilder();
@@ -165,9 +163,9 @@ public class GroupCliExecuter {
     }
 
 
-     @Command("/setLocation")
-     @Usage("(attach location to the msg)")
-     private void setLocation(@Meta MessageFromOtherAtomEvent event) {
+    @Command("/setLocation")
+    @Usage("(attach location to the msg)")
+    private void setLocation(@Meta MessageFromOtherAtomEvent event) {
         try {
             WonMessage msg = event.getWonMessage();
             Dataset content = msg.getMessageContent();
@@ -194,7 +192,7 @@ public class GroupCliExecuter {
         } catch (Exception e) {
             bus.publish(new ConnectionMessageCommandEvent(event.getCon(), "No location attached to msg!"));
         }
-     }
+    }
 
     @Command("/meet")
     public void meet(@Meta MessageFromOtherAtomEvent event) {
