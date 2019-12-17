@@ -98,7 +98,7 @@ public class ReceiverCliExecuter {
 
         List<Group> groups = wrapper.getAllGroups();
         Optional<Group> group = groups.stream()
-                .filter(g -> g.getName().equals(groupName + " GroupChannel"))
+                .filter(g -> g.getName().equals(groupName))
                 .findFirst();
 
         if (!group.isPresent()) {
